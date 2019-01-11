@@ -1,4 +1,8 @@
 require "bundler/setup"
+
+require "mongoid"
+require "graphql"
+
 require "model_to_graphql"
 
 RSpec.configure do |config|
