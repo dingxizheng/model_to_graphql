@@ -24,7 +24,7 @@ RSpec.describe ModelToGraphql::Objects::Field do
     field :rating,              type: Integer
     field :will_buy_again,      type: Boolean
     field :reason_for_use,      type: Array,    default: [], element: String
-    field :positive_effects,    type: Array,    default: [], element: String
+    field :positive_effects,    type: Array,    default: [], element: String, sortable: true
     field :negative_effects,    type: Array,    default: [], element: String
     field :comment,             type: String,   text: true,  sortable: false
 
@@ -66,6 +66,16 @@ RSpec.describe ModelToGraphql::Objects::Field do
       expect {
         ModelToGraphql::Objects::Field.new("id", type: "String")
       }.to raise_error(ContractError, /With Contract: String, Hash => Any/)
+    end
+  end
+
+  context "Disable sort on none sortable types" do
+    let(:positive_effects) { Review.fields["positive_effects"] }
+    subject { ModelToGraphql::Objects::Field.new(positive_effects) }
+
+    it "should set sortable to false for field positive_effects" do
+      pp subject
+      expect(subject.sortable).to be false
     end
   end
 end

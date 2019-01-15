@@ -6,11 +6,6 @@
 # ==== Examples
 #   field :tags, type: Array, element: String
 Mongoid::Fields.option :element do |model, field, _|
-  model.validate :"validate_#{field.name}_element"
-  model.define_method("validate_#{field.name}_element") do
-    # send(field.name).each
-    # TODO: implement the validation logic
-  end
 end
 
 # Required option is a short hand option for validates_presence_of
@@ -64,8 +59,14 @@ module Mongoid
       end
 
       def graphql_turned_on?
+        reutrn false if embedded_model?
         return false if @turn_on_graphql.nil?
         @turn_on_graphql
+      end
+
+      # Check if current model is embedded in other models
+      def embedded_model?
+        reflect_on_all_associations(:embedded_in).size > 0
       end
     end
   end

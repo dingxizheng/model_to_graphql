@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "promise.rb"
+
 class MongoidModel
   def self.valid?(val)
     if val&.is_a? Class
@@ -41,5 +43,11 @@ class GraphQLResolver
     else
       false
     end
+  end
+end
+
+class GraphQLResolverPromise
+  def self.valid?(val)
+    val&.is_a? Promise
   end
 end

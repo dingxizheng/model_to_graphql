@@ -101,6 +101,8 @@ RSpec.describe ModelToGraphql::Definitions::ModelDefinition do
         subject.field :test_field, type: String, placeholder: "wrong"
       }.to raise_error(ContractError)
     end
+  end
 
+  describe "relations" do
   end
 end

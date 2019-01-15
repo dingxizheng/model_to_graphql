@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "graphql-batch"
   spec.add_runtime_dependency "contracts"
   spec.add_runtime_dependency "require_all"
+  spec.add_runtime_dependency "promise.rb"
   
   spec.add_development_dependency "mongoid", "~> 5.0"
   spec.add_development_dependency "bundler", "~> 2.0"

@@ -3,13 +3,16 @@
 require "contracts"
 require_relative "../contracts/contracts.rb"
 require_relative "../objects/field.rb"
+require_relative "../orm/relation_helper.rb"
 
 FIELD = ModelToGraphql::Objects::Field
 
 module ModelToGraphql
   module Definitions
     class ModelDefinition
+      include ORM::RelationHelper
       include Contracts::Core
+
       C = Contracts
 
       Contract nil => C::ArrayOf[Class]
@@ -105,6 +108,22 @@ module ModelToGraphql
 
         # return all fields
         obj_fields
+      end
+
+      def self.discover_links(context)
+        return [] if model.nil?
+        model.reflect_on_all_associations(:belongs_to).each do |relation|
+          field relation.name,
+            resolver: context.relation_resolver(relation)
+        end
+        model.reflect_on_all_associations(:has_one).each do |relation|
+          field relation.name,
+            resolver: context.relation_resolver(relation)
+        end
+        model.reflect_on_all_associations(:has_many).each do |relation|
+          field relation.name,
+            resolver: context.relation_resolver(relation)
+        end
       end
     end
   end

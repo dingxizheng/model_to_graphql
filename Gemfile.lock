@@ -5,6 +5,7 @@ PATH
       contracts
       graphql (>= 0.8, < 2)
       graphql-batch
+      promise.rb
       require_all
 
 GEM

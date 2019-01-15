@@ -13,15 +13,16 @@ module ModelToGraphql
       ALLOWED_TYPES = C::ArrayOf[ModelToGraphql::ORM::MongoidSettings::TYPE_MAPPINGS.values]
 
       FIELD_OPTION_TYPE = {
-        type: Class,
+        type:        C::Maybe[Class],
         label:       C::Maybe[String],
         element:     C::Maybe[Class],
         sortable:    C::Maybe[C::Bool],
         editable:    C::Maybe[C::Bool],
         filterable:  C::Maybe[C::Bool],
         required:    C::Maybe[C::Bool],
-        resolver:    C::Maybe[GraphQLResolver],
+        resolver:    C::Maybe[C::Or[GraphQLResolver, GraphQLResolverPromise]],
         text:        C::Maybe[C::Bool],
+        default:     C::Maybe[C::Any],
         # placeholder value should respond_to placeholder? and resolve_value
         placeholder: C::Maybe[C::RespondTo[:"placeholder?", :resolve_value]]
       }.freeze
@@ -29,13 +30,15 @@ module ModelToGraphql
       # Attributes
       attr_accessor :name, :type, :element, :required,
         :label, :sortable, :editable, :filterable,
-        :foreign_key, :foreign_class, :text
+        :foreign_key, :foreign_class, :text, :default,
+        :resolver
 
       Contract MongoidIdField => C::Any
       def initialize(field)
         self.name = :id
         self.type = :id
         self.required = false
+        self.editable = false
       end
 
       Contract MongoidStdField => C::Any
@@ -72,6 +75,14 @@ module ModelToGraphql
         assign_attrs(name, options)
       end
 
+      def null?
+        self.required ? false : true
+      end
+
+      def required?
+        self.required ? true : false
+      end
+
       Contract String, FIELD_OPTION_TYPE => C::Any
       def assign_attrs(name, **options)
         self.name = name.to_sym
@@ -85,6 +96,17 @@ module ModelToGraphql
           else
             self.send("#{key}=", val)
           end
+        end
+
+        case type
+        when :id, :string, :integer, :float, :date, :time, :boolean, :datetime
+          self.sortable = true
+        else
+          self.sortable = false
+        end
+
+        if text
+          self.sortable = false
         end
       end
 
