@@ -17,9 +17,9 @@ module ModelToGraphql
       include Contracts::Core
       C = Contracts
 
-      argument :page,    Integer, required: false, default_value: 1
-      argument :per,     Integer, required: false, default_value: 10
-      argument :sort,    String,  required: false
+      argument :page, Integer, required: false, default_value: 1
+      argument :per,  Integer, required: false, default_value: 10
+      # argument :sort, String,  required: false
 
       def resolve(filter: {}, **args)
         scope = default_scope
@@ -59,7 +59,15 @@ module ModelToGraphql
         end
       end
 
-      def self.resolve_model(model, query_type)
+      def self.to_query_resolver(model, return_type, query_type, sort_key_enum)
+        Class.new(ModelQueryGenerator) do
+          to_resolve model, query_type
+          type [return_type], null: true
+          argument :sort, sort_key_enum,  required: false
+        end
+      end
+
+      def self.to_resolve(model, query_type)
         @model_klass = model
         argument(:filter, query_type, required: false)
         @handlers = query_type.argument_hanlders

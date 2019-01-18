@@ -10,12 +10,12 @@ module GraphQL
         #
         # === Parameters
         # [engine (Engine)] The model engine
-        def mount_mutations(engine)
-          engine.graphql_objects.each do |meta|
-            mutation_name = :"add_#{meta[:model].name.underscore.downcase}"
-            field mutation_name, mutation: meta[:graphql_mutation]
-          end
-        end
+        # def mount_mutations(engine)
+        #   engine.graphql_objects.each do |meta|
+        #     mutation_name = :"add_#{meta[:model].name.underscore.downcase}"
+        #     field mutation_name, mutation: meta[:graphql_mutation]
+        #   end
+        # end
 
         ##
         # Mount generated graphql queries from specified engine
@@ -23,15 +23,18 @@ module GraphQL
         # === Parameters
         # [engine (Engine)] The model engine
         def mount_queries(engine)
-          engine.graphql_objects.each do |meta|
-            field meta[:model].name.underscore.pluralize,
-              resolver: meta[:graphql_model_resolver]
+          engine.initialized.then do |parsed_models|
+            parsed_models
+              .select { |m| !m.model.embedded? }
+              .each do |model_meta|
+                field model_meta.model.name.underscore.pluralize,
+                  resolver: model_meta.model_resolver
 
-            field meta[:model].name.underscore.downcase,
-              resolver: meta[:graphql_record_resolver]
+                field model_meta.model.name.underscore.downcase,
+                  resolver: model_meta.single_resolver
+              end
           end
         end
-
       end
     end
   end

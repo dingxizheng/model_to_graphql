@@ -19,21 +19,26 @@ module ModelToGraphql
 
       TYPE_MAPPINGS = [
         [:string, String],
-        [:interger, Int],
+        [:integer, Int],
         [:float, Float],
+        [:object, String],
         [:boolean, Boolean],
         [:object_id, ID],
         [:date, GraphQL::Types::ISO8601DateTime],
         [:date_time, GraphQL::Types::ISO8601DateTime],
         [:time, GraphQL::Types::ISO8601DateTime],
         [:array, []],
-        [:hash, ModelToGraphql::Objects::RawJson]
+        [:hash, ModelToGraphql::Objects::RawJson],
+        [:symbol, String]
       ].freeze
 
       def self.to_graphql_type(name, fields)
         Class.new(TypeGenerator) do
           graphql_name name
           define_fields fields
+          def self.name
+            name
+          end
         end
       end
 
@@ -50,31 +55,37 @@ module ModelToGraphql
           # If resolver is provided
           elsif !f.resolver.nil? && f.resolver.is_a?(Promise)
             # Wait until resolver promise is resolved
-            f.resolver.then do |rsl|
-              field f.name, resolver: rsl
-            end
+            f.resolver
+              .then do |rsl|
+                field f.name, resolver: rsl
+              end
+              .then(nil, proc { |_| puts "#{f.name} is not supported! message: #{ _ }" })
+
           # If resovler is not a promise
           elsif !f.resolver.nil?
             field f.name, resolver: f.resolver
           else
-            field f.name, graphql_prime_type(f), null: f.null?
+            field f.name, graphql_prime_type(f.type, f.element), null: f.null?
           end
+        rescue => e
+          puts "Failed to define field #{ f.inspect }"
+          raise e
         end
       end
 
       # Resolve the graphql prime type of a given field
-      def self.graphql_prime_type(field)
-        graphql_type = TYPE_MAPPINGS.select { |pair| pair.first == field.type }&.first&.last
+      def self.graphql_prime_type(type_symbol, ele_symbol)
+        graphql_type = TYPE_MAPPINGS.select { |pair| pair.first == type_symbol }&.first&.last
         if graphql_type.is_a? Array
-          [element_type(field), null: true]
+          [element_type(ele_symbol), null: true]
         else
           graphql_type
         end
       end
 
-      def self.element_type(field)
-        return ModelToGraphql::Objects::AnyType if field.element_type.nil?
-        graphql_prime_type(field) || ModelToGraphql::Objects::AnyType
+      def self.element_type(type_symbol)
+        return ModelToGraphql::Objects::AnyType if type_symbol.nil?
+        graphql_prime_type(type_symbol, nil) || ModelToGraphql::Objects::AnyType
       end
     end
   end

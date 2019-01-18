@@ -19,6 +19,7 @@ module ModelToGraphql
         set: Set,
         string: String,
         symbol: Symbol,
+        object: Object,
         time: Time
       }.freeze
     end

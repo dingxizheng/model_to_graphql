@@ -22,7 +22,6 @@ module ModelToGraphql
 
       Contract MongoidModel => MongoidModel
       def self.define_for_model(model_class)
-        raise ArgumentError.new("To graphql definition is turned off for #{model_class}") if model_class.graphql_turned_on?
         @model_class = model_class
       end
 
@@ -121,6 +120,14 @@ module ModelToGraphql
             resolver: context.relation_resolver(relation)
         end
         model.reflect_on_all_associations(:has_many).each do |relation|
+          field relation.name,
+            resolver: context.relation_resolver(relation)
+        end
+        model.reflect_on_all_associations(:embeds_one).each do |relation|
+          field relation.name,
+            resolver: context.relation_resolver(relation)
+        end
+        model.reflect_on_all_associations(:embeds_many).each do |relation|
           field relation.name,
             resolver: context.relation_resolver(relation)
         end

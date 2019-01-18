@@ -47,7 +47,28 @@ end
 
 # Add option method to Mongoid::Document
 module Mongoid
+
+  module Association
+
+    # This module provides behaviors shared between Association types.
+    #
+    # @since 7.0
+    module Relatable
+
+      def klass
+        @klass ||= relation_class_name.constantize
+      rescue
+        nil
+      end
+    end
+  end
+
   module Document
+    def self.extend_object(obj)
+      puts "Hello from #{self}"
+      super # important
+    end
+
     def self.included(base)
       base.extend(ClassMethods)
     end
@@ -58,8 +79,16 @@ module Mongoid
         @turn_on_graphql = boolean
       end
 
+      def store_graphql_meta(graphql_meta)
+        @graphql_meta = graphql_meta
+      end
+
+      def graphql_meta
+        @graphql_meta
+      end
+
       def graphql_turned_on?
-        reutrn false if embedded_model?
+        # return false if embedded_model?
         return false if @turn_on_graphql.nil?
         @turn_on_graphql
       end

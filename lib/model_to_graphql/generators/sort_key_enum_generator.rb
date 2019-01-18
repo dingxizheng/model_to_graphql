@@ -19,6 +19,9 @@ module ModelToGraphql
         Class.new(SortKeyEnumGenerator) do
           graphql_name name
           define_enums fields
+          def self.name
+            name
+          end
         end
       end
 

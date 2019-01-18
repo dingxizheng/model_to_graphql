@@ -21,6 +21,9 @@ module ModelToGraphql
         Class.new(QueryTypeGenerator) do
           graphql_name name
           define_arguments fields
+          def self.name
+            name
+          end
         end
       end
 
@@ -35,7 +38,7 @@ module ModelToGraphql
       Contract C::ArrayOf[ModelToGraphql::Objects::Field] => C::Any
       def self.define_arguments(fields)
         @argument_hanlders = {}
-        fields.select { |f| !f.filterable }
+        fields.select { |f| f.filterable }
               .each(&method(:make_argument))
       end
 
@@ -101,7 +104,7 @@ module ModelToGraphql
         case field.type
         when :id
           make_id_argument(field)
-        when :string
+        when :string, :symbol
           make_string_argument(field)
         when :integer
           make_computable_argument(field, Integer)

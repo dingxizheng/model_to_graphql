@@ -51,7 +51,10 @@ module ModelToGraphql
         self.foreign_key = true
 
         model_klass = field.options[:klass]
-        relation = model_klass.relations.select { |_, rl|  rl.foreign_key == field.name }.to_a.first&.last
+        relation = model_klass.relations.select do |_, rl|
+          rl.respond_to?(:foreign_key) && field.name == rl.foreign_key
+        end.to_a.first&.last
+
         klasses = if relation.polymorphic?
                     Mongoid.models.select do |m|
                       m.relations.any? { |_key, model_relation| model_relation.polymorphic? && model_relation.options[:as] == relation.name && model_relation.klass == relation.inverse_class  }
@@ -63,6 +66,9 @@ module ModelToGraphql
         self.foreign_class = klasses
         assign_attrs(field.name, field.options.slice(*FIELD_OPTION_TYPE.keys))
         self.type = :object_id
+      rescue => e
+        pp field
+        raise e
       end
 
       Contract MongoidLocalizedField => C::Any
@@ -88,11 +94,11 @@ module ModelToGraphql
         self.name = name.to_sym
         options.each do |key, val|
           if key.to_s == "type"
-            type_key = ModelToGraphql::ORM::MongoidSettings::TYPE_MAPPINGS.select { |_, v| v == val }.to_a.first&.first
-            self.type = type_key
+            # find_the_cloest_type_symbol
+            self.type = find_the_cloest_type_symbol(val)
           elsif key.to_s == "element"
-            ele_key = ModelToGraphql::ORM::MongoidSettings::TYPE_MAPPINGS.select { |_, v| v == val }.to_a.first&.first
-            self.element = ele_key
+            # ele_key = ModelToGraphql::ORM::MongoidSettings::TYPE_MAPPINGS.select { |_, v| v == val }.to_a.first&.first
+            self.element = find_the_cloest_type_symbol(val)
           else
             self.send("#{key}=", val)
           end
@@ -100,14 +106,33 @@ module ModelToGraphql
 
         case type
         when :id, :string, :integer, :float, :date, :time, :boolean, :datetime
-          self.sortable = true
+          self.sortable = true unless sortable
         else
           self.sortable = false
+        end
+
+        case type
+        when :id, :string, :integer, :float, :date, :time, :boolean, :datetime, :array
+          self.filterable = true unless filterable
+        else
+          self.filterable = false
         end
 
         if text
           self.sortable = false
         end
+      end
+
+      def find_the_cloest_type_symbol(type)
+        type_found = Object
+        type_symbol = :string
+        ModelToGraphql::ORM::MongoidSettings::TYPE_MAPPINGS.each do |sym, v|
+          if v >= type && type_found > v
+            type_found = v
+            type_symbol = sym
+          end
+        end
+        type_symbol
       end
 
       Contract Field => Field

@@ -2,17 +2,30 @@
 
 require "contracts"
 require "promise.rb"
-require "./objects/type_promise.rb"
-require "./objects/belongs_to_promise.rb"
+require_relative "./objects/relation_resolver_promise.rb"
+require_relative "./generators/type_generator.rb"
+require_relative "./generators/sort_key_enum_generator.rb"
+require_relative "./generators/query_type_generator.rb"
+require_relative "./generators/single_record_query_generator.rb"
 
 module ModelToGraphql
   class Engine
+    include ModelToGraphql::Generators
+    include ModelToGraphql::Objects
+    include ModelToGraphql::Definitions
     include Contracts::Core
     C = Contracts
 
-    @promises = []
+    attr_accessor :initialized
 
-    Contract String => nil
+    def initialize(config)
+      @config = config
+      @promises = []
+      @models = []
+      @initialized = Promise.new
+    end
+
+    Contract String => C::Any
     def scan_models(model_path)
       # Load all models
       Dir[File.join(model_path, "*.rb")].each do |file|
@@ -20,7 +33,7 @@ module ModelToGraphql
       end
     end
 
-    Contract String => nil
+    Contract String => C::Any
     def scan_model_definitions(model_def_path)
       # Load all models
       Dir[File.join(model_def_path, "*.rb")].each do |file|
@@ -29,32 +42,68 @@ module ModelToGraphql
     end
 
     def bootstrap
+      scan_model_definitions(@config[:model_def_dir])
       Mongoid.models.each do |model|
+        next if (@config[:excluded_models] | []).include?(model)
+
         model_def = find_model_def(model) || create_model_def(model)
         model_def.discover_links(self)
-        model_def.merged_fields
+        fields = model_def.merged_fields
+
+        type     = make_type("#{model.name}Type", fields)
+        sort_enum= make_sort_key_enum("#{model.name}SortKey", fields)
+        query    = nil
+        resolver = nil
+        single_query_resolver = nil
+        if !model.embedded?
+          query                 = make_query_type("#{model.name}Query", fields)
+          resolver              = make_model_query_resolver(model, type, query, sort_enum)
+          single_query_resolver = make_single_query_resolver(model, type)
+        end
+
+        model_meta = Model.new(model, type: type, query_type: query, model_resolver: resolver, single_resolver: single_query_resolver)
+        model.store_graphql_meta(model_meta)
+        @models << model_meta
       end
+
+      @promises.each do |promise|
+        if (@config[:excluded_models] | []).include?(promise.relation.klass)
+          promise.reject "#{promise.relation.klass} is excluded!"
+        end
+        promise.resolve
+      end
+      initialized.fulfill(@models)
+      self
     end
 
-    def make_type(fields)
+    def make_type(name, fields)
+      TypeGenerator.to_graphql_type(name, fields)
     end
 
-    def make_query_type(fields)
+    def make_query_type(name, fields)
+      QueryTypeGenerator.to_graphql_type(name, fields)
     end
 
-    def make_mutation()
+    def make_model_query_resolver(model, return_type, query_type, sort_enum)
+      ModelQueryGenerator.to_query_resolver(model, return_type, query_type, sort_enum)
     end
 
-    def make_filter_type()
+    def make_single_query_resolver(model, return_type)
+      SingleRecordQueryGenerator.to_query_resolver(model, return_type)
     end
 
-    Contract Class => Class
+    def make_sort_key_enum(name, fields)
+      SortKeyEnumGenerator.to_graphql_enum(name, fields)
+    end
+
+    def make_mutation
+    end
+
     def find_model_def(model)
-      equals = model.method(:==)
-      ModelDefinition.definitions.select(&equals)&.first
+      equals_current = model.method(:==)
+      ModelDefinition.definitions.select(&equals_current)&.first
     end
 
-    Contract Class => Class
     def create_model_def(model)
       Class.new(ModelDefinition) do
         define_for_model model
@@ -62,9 +111,13 @@ module ModelToGraphql
     end
 
     def relation_resolver(relation)
-      promise = RelationResolverPromise.new(relation, self)
+      promise = RelationResolverPromise.of(relation, self)
       @promises << promise
       promise
+    end
+
+    def parsed_models
+      @models || []
     end
   end
 end
