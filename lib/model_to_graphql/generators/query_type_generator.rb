@@ -3,8 +3,9 @@
 require "contracts"
 require "promise.rb"
 require_relative "../objects/field.rb"
-require_relative "../objects/any_type.rb"
-require_relative "../objects/raw_json.rb"
+require_relative "../types/any_type.rb"
+require_relative "../types/raw_json.rb"
+require_relative "../types/date_type.rb"
 
 module ModelToGraphql
   module Generators
@@ -112,7 +113,9 @@ module ModelToGraphql
           make_boolean_argument(field)
         when :float
           make_computable_argument(field, Float)
-        when :time, :datetime, :date
+        when :date
+          make_time_argument(field, ModelToGraphql::Types::DateType)
+        when :time, :date_time
           make_time_argument(field, GraphQL::Types::ISO8601DateTime)
         end
       end

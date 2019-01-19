@@ -3,8 +3,9 @@
 require "contracts"
 require "promise.rb"
 require_relative "../objects/field.rb"
-require_relative "../objects/any_type.rb"
-require_relative "../objects/raw_json.rb"
+require_relative "../types/any_type.rb"
+require_relative "../types/raw_json.rb"
+require_relative "../types/date_type.rb"
 
 module ModelToGraphql
   module Generators
@@ -24,11 +25,11 @@ module ModelToGraphql
         [:object, String],
         [:boolean, Boolean],
         [:object_id, ID],
-        [:date, GraphQL::Types::ISO8601DateTime],
+        [:date, ModelToGraphql::Types::DateType],
         [:date_time, GraphQL::Types::ISO8601DateTime],
         [:time, GraphQL::Types::ISO8601DateTime],
         [:array, []],
-        [:hash, ModelToGraphql::Objects::RawJson],
+        [:hash, ModelToGraphql::Types::RawJson],
         [:symbol, String]
       ].freeze
 
@@ -84,8 +85,8 @@ module ModelToGraphql
       end
 
       def self.element_type(type_symbol)
-        return ModelToGraphql::Objects::AnyType if type_symbol.nil?
-        graphql_prime_type(type_symbol, nil) || ModelToGraphql::Objects::AnyType
+        return ModelToGraphql::Types::AnyType if type_symbol.nil?
+        graphql_prime_type(type_symbol, nil) || ModelToGraphql::Types::AnyType
       end
     end
   end

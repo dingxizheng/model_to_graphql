@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 module ModelToGraphql
-  module Objects
+  module Types
     class RawJson < GraphQL::Schema::Scalar
       description "A valid JSON"
   

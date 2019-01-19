@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ModelToGraphql
-  module Objects
+  module Types
     class AnyType < GraphQL::Schema::Scalar
       description "ANY TYPE"
 

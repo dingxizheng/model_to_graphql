@@ -3,8 +3,8 @@
 require "contracts"
 require "promise.rb"
 require_relative "../objects/field.rb"
-require_relative "../objects/any_type.rb"
-require_relative "../objects/raw_json.rb"
+require_relative "../types/any_type.rb"
+require_relative "../types/raw_json.rb"
 
 module ModelToGraphql
   module Generators
@@ -25,7 +25,7 @@ module ModelToGraphql
         scope = default_scope
 
         filter.each do |arg, value|
-          arg_handler = @handlers[arg]
+          arg_handler = self.class.query_handlers[arg.to_s]
           if !arg_handler.nil?
             scope = arg_handler.call(scope, value)
           end
@@ -75,6 +75,10 @@ module ModelToGraphql
 
       def self.model_class
         @model_klass
+      end
+
+      def self.query_handlers
+        @handlers || {}
       end
     end
   end
