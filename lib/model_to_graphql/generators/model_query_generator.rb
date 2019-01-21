@@ -19,11 +19,10 @@ module ModelToGraphql
 
       argument :page, Integer, required: false, default_value: 1
       argument :per,  Integer, required: false, default_value: 10
-      # argument :sort, String,  required: false
 
+      # @params filter [Hash]
       def resolve(filter: {}, **args)
         scope = default_scope
-
         filter.each do |arg, value|
           arg_handler = self.class.query_handlers[arg.to_s]
           if !arg_handler.nil?
@@ -63,7 +62,7 @@ module ModelToGraphql
         Class.new(ModelQueryGenerator) do
           to_resolve model, query_type
           type [return_type], null: true
-          argument :sort, sort_key_enum,  required: false
+          argument :sort, sort_key_enum, required: false
         end
       end
 

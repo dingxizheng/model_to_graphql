@@ -10,7 +10,16 @@ module ModelToGraphql
 
   class << self
     def configure(&block)
-      instance_eval &block
+      instance_eval(&block)
+    end
+
+    # Define which orm framework to be used.
+    # Mongoid is set as default
+    # 
+    # @param orm [Symbol]
+    # @return nil
+    def use_orm(orm = :mongoid)
+      config(:orm, orm)
     end
 
     def model_scan_dir(model_scan_dir)

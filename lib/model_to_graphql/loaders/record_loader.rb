@@ -2,6 +2,7 @@
 
 module ModelToGraphql
   module Loaders
+
     class RecordLoader < GraphQL::Batch::Loader
       def initialize(model)
         @model = model

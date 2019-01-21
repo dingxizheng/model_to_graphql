@@ -100,8 +100,7 @@ module ModelToGraphql
     end
 
     def find_model_def(model)
-      equals_current = model.method(:==)
-      ModelDefinition.definitions.select(&equals_current)&.first
+      ModelDefinition.definitions.select { |definition| model == definition.model }&.first
     end
 
     def create_model_def(model)
