@@ -105,7 +105,7 @@ module ModelToGraphql
         case field.type
         when :id
           make_id_argument(field)
-        when :string, :symbol
+        when :string, :symbol, :object_id
           make_string_argument(field)
         when :integer
           make_computable_argument(field, Integer)

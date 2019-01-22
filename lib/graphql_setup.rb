@@ -32,6 +32,11 @@ module GraphQL
 
                 field model_meta.model.name.underscore.downcase,
                   resolver: model_meta.single_resolver
+
+                if model_meta.query_keys
+                  field "#{model_meta.model.name.underscore.downcase}_query_keys", [model_meta.query_keys], null: true,
+                    resolve: -> () { model_meta.query_keys.map { |f| f.values.keys } }
+                end
               end
           end
         end

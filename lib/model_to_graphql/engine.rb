@@ -57,11 +57,18 @@ module ModelToGraphql
         single_query_resolver = nil
         if !model.embedded?
           query                 = make_query_type("#{model.name}Query", fields)
+          query_keys            = make_query_key_enum("#{model.name}QueryKey", query)
           resolver              = make_model_query_resolver(model, type, query, sort_enum)
           single_query_resolver = make_single_query_resolver(model, type)
         end
 
-        model_meta = Model.new(model, type: type, query_type: query, model_resolver: resolver, single_resolver: single_query_resolver)
+        model_meta = Model.new(model, 
+          type: type, 
+          query_type: query, 
+          model_resolver: resolver, 
+          single_resolver: single_query_resolver,
+          query_keys: query_keys
+        )
         model.store_graphql_meta(model_meta)
         @models << model_meta
       end
@@ -94,6 +101,15 @@ module ModelToGraphql
 
     def make_sort_key_enum(name, fields)
       SortKeyEnumGenerator.to_graphql_enum(name, fields)
+    end
+
+    def make_query_key_enum(gl_name, query)
+      Class.new(GraphQL::Schema::Enum) do
+        graphql_name gl_name
+        query.arguments.keys.each do |name, _|
+          value name, "Query key #{name}"
+        end
+      end
     end
 
     def make_mutation

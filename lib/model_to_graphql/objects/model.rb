@@ -14,10 +14,11 @@ module ModelToGraphql
         type: C::Any,
         query_type: C::Any,
         model_resolver: C::Any,
-        single_resolver: C::Any
+        single_resolver: C::Any,
+        query_keys: C::Any,
       }.freeze
 
-      ALLOWED_ATTRIBUTES = [:type, :query_type, :model_resolver, :single_resolver].freeze
+      ALLOWED_ATTRIBUTES = [:type, :query_type, :model_resolver, :single_resolver, :query_keys].freeze
       attr_accessor *ALLOWED_ATTRIBUTES
       attr_accessor :model
 
