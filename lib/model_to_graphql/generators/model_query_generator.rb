@@ -5,6 +5,7 @@ require "promise.rb"
 require_relative "../objects/field.rb"
 require_relative "../types/any_type.rb"
 require_relative "../types/raw_json.rb"
+require_relative "../types/paged_result_type.rb"  
 
 module ModelToGraphql
   module Generators
@@ -29,9 +30,14 @@ module ModelToGraphql
             scope = arg_handler.call(scope, value)
           end
         end
+        total = scope.count
         scope = pagination(scope, **args)
         scope = sort(scope, **args)
-        scope
+        OpenStruct.new(
+          list:  scope,
+          total: total,
+          page:  args[:page]
+        )
       end
 
       def pagination(scope, page:, per:, **kwargs)
@@ -62,6 +68,7 @@ module ModelToGraphql
         Class.new(ModelQueryGenerator) do
           to_resolve model, query_type
           type [return_type], null: true
+          type ModelToGraphql::Types::PagedResultType[return_type], null: false
           argument :sort, sort_key_enum, required: false
         end
       end

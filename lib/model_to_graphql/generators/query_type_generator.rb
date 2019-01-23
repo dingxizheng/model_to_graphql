@@ -9,7 +9,7 @@ require_relative "../types/date_type.rb"
 
 module ModelToGraphql
   module Generators
-
+    
     unless defined?(GraphQL::Schema::InputObject)
       raise "Graphql is not loaded!!!"
     end
@@ -47,6 +47,8 @@ module ModelToGraphql
         @argument_hanlders[arg_name.to_s] = -> (scope, value) {
           if operator.nil?
             scope.where("#{field_name}": value)
+          elsif operator.to_s == "regex"
+            scope.where("#{field_name}": { "$#{operator}": /#{value}/ })
           else
             scope.where("#{field_name}": { "$#{operator}": value })
           end

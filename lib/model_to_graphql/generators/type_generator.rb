@@ -33,12 +33,13 @@ module ModelToGraphql
         [:symbol, String]
       ].freeze
 
-      def self.to_graphql_type(name, fields)
+      def self.to_graphql_type(gl_name, fields)
         Class.new(TypeGenerator) do
-          graphql_name name
+          graphql_name gl_name
           define_fields fields
+          @@gl_name = gl_name
           def self.name
-            name
+            @@gl_name
           end
         end
       end
