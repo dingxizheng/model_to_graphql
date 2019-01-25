@@ -42,6 +42,7 @@ module ModelToGraphql
     end
 
     def bootstrap
+      # scan_models(@config[:model_dir])
       scan_model_definitions(@config[:model_def_dir])
       Mongoid.models.each do |model|
         next if (@config[:excluded_models] | []).include?(model)

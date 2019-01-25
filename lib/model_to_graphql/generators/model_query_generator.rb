@@ -5,7 +5,7 @@ require "promise.rb"
 require_relative "../objects/field.rb"
 require_relative "../types/any_type.rb"
 require_relative "../types/raw_json.rb"
-require_relative "../types/paged_result_type.rb"  
+require_relative "../types/paged_result_type.rb"
 
 module ModelToGraphql
   module Generators
