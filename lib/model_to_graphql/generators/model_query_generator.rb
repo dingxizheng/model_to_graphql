@@ -54,11 +54,11 @@ module ModelToGraphql
       end
 
       def default_scope
-        if !object.nil?
-          relation = object.class.relations.select do |_, re|
-            re.class.ancestors.include?(Mongoid::Association::Referenced::HasMany) && re.klass == self.class.model_class
-          end&.first
-          object.send(relation[0])
+        if !object.nil? && self.class.current_relation
+          # relation = object.class.relations.select do |_, re|
+          #   re.class.ancestors.include?(Mongoid::Association::Referenced::HasMany) && re.klass == self.class.model_class
+          # end&.first
+          object.send(self.class.current_relation.name)
         else
           self.class.model_class
         end
@@ -85,6 +85,14 @@ module ModelToGraphql
 
       def self.query_handlers
         @handlers || {}
+      end
+
+      def self.set_relation(relation)
+        @relation = relation
+      end
+
+      def self.current_relation
+        @relation
       end
     end
   end

@@ -31,7 +31,9 @@ module ModelToGraphql
                   when Mongoid::Association::Referenced::HasOne
                     HasOneRelationResolverGenerator.to_relation_resolver(relation, relation.klass.graphql_meta.type)
                   when Mongoid::Association::Referenced::HasMany
-                    relation.klass.graphql_meta.model_resolver
+                    cloned_resolver = relation.klass.graphql_meta.model_resolver.clone
+                    cloned_resolver.set_relation(relation)
+                    cloned_resolver
                   else
                     puts "#{relation.class} is not supported!!"
                 end
