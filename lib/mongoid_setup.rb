@@ -65,7 +65,6 @@ module Mongoid
 
   module Document
     def self.extend_object(obj)
-      puts "Hello from #{self}"
       super # important
     end
 
@@ -77,14 +76,6 @@ module Mongoid
       # Where turn on graphql for the current model
       def turn_on_graphql(boolean = true)
         @turn_on_graphql = boolean
-      end
-
-      def store_graphql_meta(graphql_meta)
-        @graphql_meta = graphql_meta
-      end
-
-      def graphql_meta
-        @graphql_meta
       end
 
       def graphql_turned_on?

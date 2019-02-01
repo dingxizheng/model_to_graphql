@@ -25,13 +25,13 @@ module ModelToGraphql
                   when Mongoid::Association::Referenced::BelongsTo
                     BelongsToRelationResolverGenerator.to_relation_resolver(relation, resolve_belongs_to_type)
                   when Mongoid::Association::Embedded::EmbedsOne
-                    EmbedsOneRelationResolverGenerator.to_relation_resolver(relation, relation.klass.graphql_meta.type)
+                    EmbedsOneRelationResolverGenerator.to_relation_resolver(relation, context.find_meta(relation.klass).type)
                   when Mongoid::Association::Embedded::EmbedsMany
-                    EmbedsManyRelationResolverGenerator.to_relation_resolver(relation, relation.klass.graphql_meta.type)
+                    EmbedsManyRelationResolverGenerator.to_relation_resolver(relation, context.find_meta(relation.klass).type)
                   when Mongoid::Association::Referenced::HasOne
-                    HasOneRelationResolverGenerator.to_relation_resolver(relation, relation.klass.graphql_meta.type)
+                    HasOneRelationResolverGenerator.to_relation_resolver(relation, context.find_meta(relation.klass).type)
                   when Mongoid::Association::Referenced::HasMany
-                    cloned_resolver = relation.klass.graphql_meta.model_resolver.clone
+                    cloned_resolver = context.find_meta(relation.klass).model_resolver.clone
                     cloned_resolver.set_relation(relation)
                     cloned_resolver
                   else
@@ -50,11 +50,13 @@ module ModelToGraphql
           end.map { |m| m.type  }
 
           type_name = "Possible#{relation.name.capitalize}Type"
+          engine_context = context
           Class.new(GraphQL::Schema::Union) do
+            @@engine_context = engine_context
             graphql_name type_name
             possible_types *graphql_types
             def self.resolve_type(obj, _ctx)
-              obj.class.graphql_meta.type
+              @@engine_context.find_meta(obj.class).type
             rescue => _
               fail "Couldn't find the return type of object #{obj} when its class it's #{obj.class}"
             end

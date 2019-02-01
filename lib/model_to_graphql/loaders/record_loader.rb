@@ -9,7 +9,6 @@ module ModelToGraphql
       end
 
       def perform(ids)
-        puts "HELLO #{ ids }"
         @model.where(:id.in => ids).each { |record| fulfill(record.id.to_s, record) }
         ids.each { |id| fulfill(id, nil) unless fulfilled?(id) }
       end

@@ -70,7 +70,6 @@ module ModelToGraphql
           single_resolver: single_query_resolver,
           query_keys: query_keys
         )
-        model.store_graphql_meta(model_meta)
         @models << model_meta
       end
 
@@ -132,8 +131,41 @@ module ModelToGraphql
       promise
     end
 
+    def find_meta(model_class)
+      @models.select { |m| m.model == model_class }&.first
+    end
+
     def parsed_models
       @models || []
     end
+
+    def types
+      graphql_models = @models
+
+      # Generate a class methods module
+      class_methods_module = Module.new do
+        @@_graphql_models = graphql_models
+
+        def type_of(model_class)
+          meta_type_of(model_class).type
+        end
+
+        def meta_type_of(model_class)
+          @@_graphql_models.select { |m| m.model == model_class }&.first
+        end
+      end
+
+      # Generate the module which could be included into other classes
+      Module.new do
+        @@class_methods_module = class_methods_module
+        def self.extend_object(obj)
+          super # important
+        end
+        def self.included(base)
+          base.extend(@@class_methods_module)
+        end
+      end
+    end
+
   end
 end
