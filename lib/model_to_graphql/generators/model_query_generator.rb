@@ -30,12 +30,11 @@ module ModelToGraphql
             scope = arg_handler.call(scope, value)
           end
         end
-        total = scope.count
         scope = pagination(scope, **args)
         scope = sort(scope, **args)
         OpenStruct.new(
           list:  scope,
-          total: total,
+          total: 0,
           page:  args[:page]
         )
       end

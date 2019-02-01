@@ -7,9 +7,14 @@ module ModelToGraphql
         Class.new(GraphQL::Schema::Object) do
           description "Paged result"
           graphql_name "#{ name || return_type.name}PagedResult"
+
           field :total, Integer, null: false
           field :page,  Integer, null: false
           field :list,  [return_type], null: true
+
+          def total
+            object&.list&.count
+          end
         end
       end
     end
