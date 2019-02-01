@@ -55,6 +55,8 @@ module ModelToGraphql
             possible_types *graphql_types
             def self.resolve_type(obj, _ctx)
               obj.class.graphql_meta.type
+            rescue => _
+              fail "Couldn't find the return type of object #{obj} when its class it's #{obj.class}"
             end
           end
 
