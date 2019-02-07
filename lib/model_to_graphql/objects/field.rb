@@ -105,14 +105,14 @@ module ModelToGraphql
         end
 
         case type
-        when :id, :string, :integer, :float, :date, :time, :boolean, :datetime
+        when :id, :string, :integer, :float, :date, :time, :boolean, :date_time, :symbol
           self.sortable = true unless sortable
         else
           self.sortable = false
         end
 
         case type
-        when :id, :string, :integer, :float, :date, :time, :boolean, :datetime, :array
+        when :id, :string, :integer, :float, :date, :time, :boolean, :date_time, :array, :symbol
           self.filterable = true unless filterable
         else
           self.filterable = false
