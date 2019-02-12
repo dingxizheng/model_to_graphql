@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../loaders/record_loader.rb"
+require_relative "../loaders/has_one_loader.rb"
 
 module ModelToGraphql
   module Generators
