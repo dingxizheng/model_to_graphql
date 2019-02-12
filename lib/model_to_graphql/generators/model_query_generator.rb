@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "contracts"
-require "promise.rb"
 require_relative "../objects/field.rb"
 require_relative "../types/any_type.rb"
 require_relative "../types/raw_json.rb"
@@ -15,8 +13,6 @@ module ModelToGraphql
     end
 
     class ModelQueryGenerator < GraphQL::Schema::Resolver
-      include Contracts::Core
-      C = Contracts
 
       argument :page, Integer, required: false, default_value: 1
       argument :per,  Integer, required: false, default_value: 10
@@ -53,18 +49,25 @@ module ModelToGraphql
       end
 
       def default_scope
+        authorized_scope = self.class.resolve_authorized_scope(context, self.class.model_class)
         if !object.nil? && self.class.current_relation
-          # relation = object.class.relations.select do |_, re|
-          #   re.class.ancestors.include?(Mongoid::Association::Referenced::HasMany) && re.klass == self.class.model_class
-          # end&.first
-          object.send(self.class.current_relation.name)
+          base_selector     = authorized_scope.selector
+          relation_selector = object.send(self.class.current_relation.name).selector
+          self.class.model_class.where(base_selector).where(relation_selector)
         else
-          self.class.model_class
+          authorized_scope
         end
       end
 
-      def self.to_query_resolver(model, return_type, query_type, sort_key_enum)
+      # Generate graphql field resolver class
+      # @param model Base model class
+      # @param return_type The corresponding graphql type of the given model class
+      # @param query_type The filter type
+      # @param sort_key_enum Suppotted sort keys
+      # @param scope_resolver_proc The proc which called to resolve the default scope based on the context.
+      def self.to_query_resolver(model, return_type, query_type, sort_key_enum, scope_resolver_proc = nil)
         Class.new(ModelQueryGenerator) do
+          scope_resolver scope_resolver_proc
           to_resolve model, query_type
           type [return_type], null: true
           type ModelToGraphql::Types::PagedResultType[return_type], null: false
@@ -92,6 +95,23 @@ module ModelToGraphql
 
       def self.current_relation
         @relation
+      end
+
+      def self.scope_resolver(resolver_proc = nil)
+        @scope_resolver = resolver_proc
+      end
+
+      # Resovle the authorized scope
+      # @param context Graphql execution context
+      # @param model Base model class
+      def self.resolve_authorized_scope(context, model)
+        return model if @scope_resolver.nil?
+        begin
+          return @scope_resolver.call(context, model)
+        rescue => e
+          puts "Failed to resolve the scope for #{model} when the context is #{context}"
+          raise e
+        end
       end
     end
   end

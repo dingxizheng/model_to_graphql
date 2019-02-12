@@ -9,7 +9,7 @@ require_relative "../types/date_type.rb"
 
 module ModelToGraphql
   module Generators
-    
+
     unless defined?(GraphQL::Schema::InputObject)
       raise "Graphql is not loaded!!!"
     end
@@ -121,7 +121,6 @@ module ModelToGraphql
           make_time_argument(field, GraphQL::Types::ISO8601DateTime)
         end
       end
-
     end
   end
 end

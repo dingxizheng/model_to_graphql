@@ -19,9 +19,9 @@ module ModelToGraphql
     attr_accessor :initialized
 
     def initialize(config)
-      @config = config
+      @config   = config
       @promises = []
-      @models = []
+      @models   = []
       @initialized = Promise.new
     end
 
@@ -63,10 +63,10 @@ module ModelToGraphql
           single_query_resolver = make_single_query_resolver(model, type)
         end
 
-        model_meta = Model.new(model, 
-          type: type, 
-          query_type: query, 
-          model_resolver: resolver, 
+        model_meta = Model.new(model,
+          type: type,
+          query_type: query,
+          model_resolver: resolver,
           single_resolver: single_query_resolver,
           query_keys: query_keys
         )
@@ -92,7 +92,7 @@ module ModelToGraphql
     end
 
     def make_model_query_resolver(model, return_type, query_type, sort_enum)
-      ModelQueryGenerator.to_query_resolver(model, return_type, query_type, sort_enum)
+      ModelQueryGenerator.to_query_resolver(model, return_type, query_type, sort_enum, @config[:list_scope])
     end
 
     def make_single_query_resolver(model, return_type)

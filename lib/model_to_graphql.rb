@@ -34,6 +34,27 @@ module ModelToGraphql
       config(:model_def_dir, model_def_scan_dir)
     end
 
+    # Pass an proc to resolve if current query is allowed
+    def authorize(proc = nil, &block)
+      if proc.is_a? Proc
+        config(:authorize, proc)
+      elsif block_given?
+        config(:authorize, block)
+      else
+        raise ArgumentError, "Proc must be provided!"
+      end
+    end
+
+    def list_scope(proc = nil, &block)
+      if proc.is_a? Proc
+        config(:list_scope, proc)
+      elsif block_given?
+        config(:list_scope, block)
+      else
+        raise ArgumentError, "Proc must be provided!"
+      end
+    end
+
     def config(key, val)
       @config ||= {}
       @config[key.to_sym] = val
