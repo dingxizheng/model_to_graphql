@@ -13,7 +13,6 @@ module ModelToGraphql
     unless defined?(GraphQL::Schema::Object)
       raise "Graphql is not loaded!!!"
     end
-
     class TypeGenerator < GraphQL::Schema::Object
       include Contracts::Core
       C = Contracts
@@ -33,10 +32,16 @@ module ModelToGraphql
         [:symbol, String]
       ].freeze
 
-      def self.to_graphql_type(gl_name, fields)
+      def self.to_graphql_type(gl_name, fields, guard_proc = nil)
         Class.new(TypeGenerator) do
           graphql_name gl_name
           define_fields fields
+          # If guard_proc is given
+          if !guard_proc.nil? && guard_proc.is_a?(Proc)
+            guard(-> (obj, args, ctx) {
+              guard_proc.call(obj, args, ctx)
+            })
+          end
           @@gl_name = gl_name
           def self.name
             @@gl_name
@@ -61,7 +66,7 @@ module ModelToGraphql
               .then do |rsl|
                 field f.name, resolver: rsl
               end
-              .then(nil, proc { |_| puts "#{f.name} is not supported! message: #{ _ }" })
+              .then(nil, proc { |err| puts "#{f.name} is not supported! message: #{err}" })
 
           # If resovler is not a promise
           elsif !f.resolver.nil?

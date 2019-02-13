@@ -3,20 +3,24 @@
 require "contracts"
 require "promise.rb"
 require_relative "./objects/relation_resolver_promise.rb"
+require_relative "./types/model_type.rb"
 require_relative "./generators/type_generator.rb"
 require_relative "./generators/sort_key_enum_generator.rb"
 require_relative "./generators/query_type_generator.rb"
 require_relative "./generators/single_record_query_generator.rb"
+require_relative "./objects/return_type_instrumentor.rb"
 
 module ModelToGraphql
   class Engine
     include ModelToGraphql::Generators
     include ModelToGraphql::Objects
     include ModelToGraphql::Definitions
+    include ModelToGraphql::Types
     include Contracts::Core
     C = Contracts
 
     attr_accessor :initialized
+    attr_accessor :config
 
     def initialize(config)
       @config   = config
@@ -51,10 +55,10 @@ module ModelToGraphql
         model_def.discover_links(self)
         fields = model_def.merged_fields
 
-        type     = make_type("#{model.name}Type", fields)
-        sort_enum= make_sort_key_enum("#{model.name}SortKey", fields)
-        query    = nil
-        resolver = nil
+        type      = make_type("#{model.name}Type", fields)
+        sort_enum = make_sort_key_enum("#{model.name}SortKey", fields)
+        query     = nil
+        resolver  = nil
         single_query_resolver = nil
         if !model.embedded?
           query                 = make_query_type("#{model.name}Query", fields)
@@ -84,7 +88,7 @@ module ModelToGraphql
     end
 
     def make_type(name, fields)
-      TypeGenerator.to_graphql_type(name, fields)
+      TypeGenerator.to_graphql_type(name, fields, @config[:authorize_object])
     end
 
     def make_query_type(name, fields)
@@ -139,33 +143,16 @@ module ModelToGraphql
       @models || []
     end
 
-    def types
-      graphql_models = @models
-
-      # Generate a class methods module
-      class_methods_module = Module.new do
-        @@_graphql_models = graphql_models
-
-        def type_of(model_class)
-          meta_type_of(model_class).type
-        end
-
-        def meta_type_of(model_class)
-          @@_graphql_models.select { |m| m.model == model_class }&.first
-        end
-      end
-
-      # Generate the module which could be included into other classes
-      Module.new do
-        @@class_methods_module = class_methods_module
-        def self.extend_object(obj)
-          super # important
-        end
-        def self.included(base)
-          base.extend(@@class_methods_module)
-        end
-      end
+    def meta_type_of(model_class)
+      parsed_models.select { |m| m.model == model_class }&.first
     end
 
+    def type_of(model_class)
+      meta_type_of(model_class).type
+    end
+
+    def return_type_instrumentor
+      ReturnTypeInstrumentor.new(method(:type_of).to_proc)
+    end
   end
 end

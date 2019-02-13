@@ -35,11 +35,22 @@ module ModelToGraphql
     end
 
     # Pass an proc to resolve if current query is allowed
-    def authorize(proc = nil, &block)
+    def authorize_action(proc = nil, &block)
       if proc.is_a? Proc
-        config(:authorize, proc)
+        config(:authorize_action, proc)
       elsif block_given?
-        config(:authorize, block)
+        config(:authorize_action, block)
+      else
+        raise ArgumentError, "Proc must be provided!"
+      end
+    end
+
+    # Pass an proc to resolve if current query is allowed
+    def authorize_object(proc = nil, &block)
+      if proc.is_a? Proc
+        config(:authorize_object, proc)
+      elsif block_given?
+        config(:authorize_object, block)
       else
         raise ArgumentError, "Proc must be provided!"
       end
@@ -82,3 +93,4 @@ require_relative "model_to_graphql/generators/sort_key_enum_generator.rb"
 require_relative "model_to_graphql/generators/model_query_generator.rb"
 require_relative "model_to_graphql/engine.rb"
 require_relative "model_to_graphql/types/any_type.rb"
+require_relative "model_to_graphql/types/model_type.rb"
