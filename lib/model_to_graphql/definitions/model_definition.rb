@@ -114,25 +114,16 @@ module ModelToGraphql
 
       def self.discover_links(context)
         return [] if model.nil?
-        model.reflect_on_all_associations(:belongs_to).each do |relation|
-          field relation.name,
-            resolver: context.relation_resolver(relation)
-        end
-        model.reflect_on_all_associations(:has_one).each do |relation|
-          field relation.name,
-            resolver: context.relation_resolver(relation)
-        end
-        model.reflect_on_all_associations(:has_many).each do |relation|
-          field relation.name,
-            resolver: context.relation_resolver(relation)
-        end
-        model.reflect_on_all_associations(:embeds_one).each do |relation|
-          field relation.name,
-            resolver: context.relation_resolver(relation)
-        end
-        model.reflect_on_all_associations(:embeds_many).each do |relation|
-          field relation.name,
-            resolver: context.relation_resolver(relation)
+        discover_links_of :belongs_to
+        discover_links_of :has_one
+        discover_links_of :has_many
+        discover_links_of :embeds_one
+        discover_links_of :embeds_many
+      end
+
+      def self.discover_links_of(link_type)
+        model.reflect_on_all_associations(link_type).each do |relation|
+          field relation.name, esolver: context.relation_resolver(relation)
         end
       end
 
