@@ -55,8 +55,9 @@ module ModelToGraphql
         model_def.discover_links(self)
         fields = model_def.merged_fields
         custom_filters = model_def.filters || []
+        raw_fields = model_def.raw_fields || []
 
-        type      = make_type("#{model.name}Type", fields)
+        type      = make_type("#{model.name}Type", fields, raw_fields)
         sort_enum = make_sort_key_enum("#{model.name}SortKey", fields)
         query     = nil
         resolver  = nil
@@ -88,8 +89,8 @@ module ModelToGraphql
       self
     end
 
-    def make_type(name, fields)
-      TypeGenerator.to_graphql_type(name, fields, @config[:authorize_object])
+    def make_type(name, fields, raw_fields)
+      TypeGenerator.to_graphql_type(name, fields, raw_fields, @config[:authorize_object])
     end
 
     def make_query_type(name, fields, custom_filters = [])

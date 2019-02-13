@@ -32,16 +32,18 @@ module ModelToGraphql
         [:symbol, String]
       ].freeze
 
-      def self.to_graphql_type(gl_name, fields, guard_proc = nil)
+      def self.to_graphql_type(gl_name, fields, raw_fields = [], guard_proc = nil)
         Class.new(TypeGenerator) do
           graphql_name gl_name
           define_fields fields
+          define_raw_fields raw_fields
           # If guard_proc is given
           if !guard_proc.nil? && guard_proc.is_a?(Proc)
             guard(-> (obj, args, ctx) {
               guard_proc.call(obj, args, ctx)
             })
           end
+
           @@gl_name = gl_name
           def self.name
             @@gl_name
@@ -51,6 +53,17 @@ module ModelToGraphql
 
       def self.name
         super || graphql_name
+      end
+
+      def self.define_raw_fields(raw_fields = [])
+        raw_fields.each do |raw_field|
+          field raw_field[:name], raw_field[:type], **raw_field[:options]
+          if !raw_field[:block].nil?
+            define_method(raw_field[:name]) do
+              instance_eval(&raw_field[:block])
+            end
+          end
+        end
       end
 
       Contract C::ArrayOf[ModelToGraphql::Objects::Field] => C::Any

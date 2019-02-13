@@ -15,7 +15,7 @@ module ModelToGraphql
       C = Contracts
 
       class << self
-        attr_accessor :filters
+        attr_accessor :filters, :raw_fields
       end
 
       Contract nil => C::ArrayOf[Class]
@@ -133,7 +133,22 @@ module ModelToGraphql
       end
 
       # Define a direct graphql field
-      def self.raw_field
+      Contract C::Or[String, Symbol], C::Maybe[Class], Hash, Proc => C::Any
+      def self.raw_field(name, type, **options, &block)
+        self.raw_fields ||= []
+        self.raw_fields << { name: name.to_sym, type: type, options: options, block: block }
+      end
+
+      Contract C::Or[String, Symbol], C::Maybe[Class], Proc => C::Any
+      def self.raw_field(name, type, &block)
+        self.raw_fields ||= []
+        self.raw_fields << { name: name.to_sym, type: type, options: {}, block: block }
+      end
+
+      Contract C::Or[String, Symbol], C::Maybe[Class], C::Maybe[Hash] => C::Any
+      def self.raw_field(name, type, **options)
+        self.raw_fields ||= []
+        self.raw_fields << { name: name.to_sym, type: type, options: options }
       end
     end
   end
