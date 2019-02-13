@@ -75,10 +75,9 @@ module ModelToGraphql
       # Merge local defined fields with model fields
       def self.merged_fields
         model_fields = model.nil? ? [] : model.fields
-        obj_fields = model_fields.map do |_, field|
-                      ModelToGraphql::Objects::Field.new(field)
-                    end
-                    .select { |f| !@exclude_fields&.include?(f.name.to_s) }
+        obj_fields = model_fields
+                      .map    { |_, field| ModelToGraphql::Objects::Field.new(field) }
+                      .select { |f| !@exclude_fields&.include?(f.name.to_s) }
 
         change_sorable   = ->(f) { @unsortable_fields&.include?(f.name.to_s) && f.sortable = false }
         change_filerable = ->(f) { @unfilterable_fields&.include?(f.name.to_s) && f.filterable = false }
@@ -89,10 +88,9 @@ module ModelToGraphql
           .each(&change_filerable)
           .each(&change_editable)
 
-        custom_fields = (@defined_fields || []).map do |name, field|
-            ModelToGraphql::Objects::Field.new(name, field)
-          end
-          .select { |f| !@exclude_fields&.include?(f.name.f) }
+        custom_fields = (@defined_fields || [])
+          .map    { |name, field| ModelToGraphql::Objects::Field.new(name, field) }
+          .select { |f| !@exclude_fields&.include?(f.name) }
 
         custom_fields
           .each(&change_sorable)
@@ -114,10 +112,10 @@ module ModelToGraphql
 
       def self.discover_links(context)
         return [] if model.nil?
-        discover_links_of :belongs_to, context: context
-        discover_links_of :has_one, context: context
-        discover_links_of :has_many, context: context
-        discover_links_of :embeds_one, context: context
+        discover_links_of :belongs_to,  context: context
+        discover_links_of :has_one,     context: context
+        discover_links_of :has_many,    context: context
+        discover_links_of :embeds_one,  context: context
         discover_links_of :embeds_many, context: context
       end
 
@@ -132,6 +130,10 @@ module ModelToGraphql
       def self.filter(name, input_type, handler: nil)
         self.filters ||= []
         self.filters << { name: name.to_sym, input_type: input_type, handler: handler }
+      end
+
+      # Define a direct graphql field
+      def self.raw_field
       end
     end
   end
