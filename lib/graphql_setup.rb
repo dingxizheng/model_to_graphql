@@ -48,11 +48,17 @@ module GraphQL
                 end
 
                 if model_meta.query_keys
-                  field "#{model_meta.model.name.underscore.downcase}_query_keys", [model_meta.query_keys], null: true,
-                    resolve: -> () { model_meta.query_keys.map { |f| f.values.keys } }
+                  field "#{model_meta.model.name.underscore.downcase}_query_keys", [model_meta.query_keys], null: true
+                  define_method("#{model_meta.model.name.underscore.downcase}_query_keys") do
+                    model_meta.query_keys.map { |f| f.values.keys }
+                  end
                 end
               end
           end
+          .then(nil, proc { |reason|
+            puts "Failed to mount_queries, error: #{reason}"
+            raise reason
+          })
         end
       end
     end
