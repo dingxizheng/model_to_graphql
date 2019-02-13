@@ -54,6 +54,7 @@ module ModelToGraphql
         model_def = find_model_def(model) || create_model_def(model)
         model_def.discover_links(self)
         fields = model_def.merged_fields
+        custom_filters = model_def.filters || []
 
         type      = make_type("#{model.name}Type", fields)
         sort_enum = make_sort_key_enum("#{model.name}SortKey", fields)
@@ -61,7 +62,7 @@ module ModelToGraphql
         resolver  = nil
         single_query_resolver = nil
         if !model.embedded?
-          query                 = make_query_type("#{model.name}Query", fields)
+          query                 = make_query_type("#{model.name}Query", fields, custom_filters)
           query_keys            = make_query_key_enum("#{model.name}QueryKey", query)
           resolver              = make_model_query_resolver(model, type, query, sort_enum)
           single_query_resolver = make_single_query_resolver(model, type)
@@ -91,8 +92,8 @@ module ModelToGraphql
       TypeGenerator.to_graphql_type(name, fields, @config[:authorize_object])
     end
 
-    def make_query_type(name, fields)
-      QueryTypeGenerator.to_graphql_type(name, fields)
+    def make_query_type(name, fields, custom_filters = [])
+      QueryTypeGenerator.to_graphql_type(name, fields, custom_filters)
     end
 
     def make_model_query_resolver(model, return_type, query_type, sort_enum)

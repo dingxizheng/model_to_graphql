@@ -18,10 +18,11 @@ module ModelToGraphql
       include Contracts::Core
       C = Contracts
 
-      def self.to_graphql_type(name, fields)
+      def self.to_graphql_type(name, fields, custom_filters = [])
         Class.new(QueryTypeGenerator) do
           graphql_name name
           define_arguments fields
+          define_custom_filters custom_filters
           def self.name
             name
           end
@@ -41,6 +42,14 @@ module ModelToGraphql
         @argument_hanlders = {}
         fields.select { |f| f.filterable }
               .each(&method(:make_argument))
+      end
+
+      # Define custom fitlers
+      def self.define_custom_filters(custom_filters)
+        !custom_filters.nil? && custom_filters.each do |filter|
+          argument filter[:name], filter[:input_type], required: false
+          @argument_hanlders[filter[:name].to_s] = filter[:handler]
+        end
       end
 
       def self.make_argument_resolver(arg_name, field_name, operator = nil)

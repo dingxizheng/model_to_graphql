@@ -12,8 +12,11 @@ module ModelToGraphql
     class ModelDefinition
       include ORM::RelationHelper
       include Contracts::Core
-
       C = Contracts
+
+      class << self
+        attr_accessor :filters
+      end
 
       Contract nil => C::ArrayOf[Class]
       def self.definitions
@@ -131,6 +134,13 @@ module ModelToGraphql
           field relation.name,
             resolver: context.relation_resolver(relation)
         end
+      end
+
+      # Define a custom filter
+      Contract C::Or[String, Symbol], C::Maybe[Class], { handler: Proc } => C::Any
+      def self.filter(name, input_type, handler: nil)
+        self.filters ||= []
+        self.filters << { name: name.to_sym, input_type: input_type, handler: handler }
       end
     end
   end
