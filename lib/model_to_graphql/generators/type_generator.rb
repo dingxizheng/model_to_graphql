@@ -60,7 +60,7 @@ module ModelToGraphql
           field raw_field[:name], raw_field[:type], **raw_field[:options]
           if !raw_field[:block].nil?
             define_method(raw_field[:name]) do
-              instance_eval(&raw_field[:block])
+              raw_field[:block].call(object, context)
             end
           end
         end
