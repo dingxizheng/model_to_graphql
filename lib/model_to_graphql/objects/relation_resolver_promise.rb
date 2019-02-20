@@ -63,11 +63,9 @@ module ModelToGraphql
           end
 
         else
-
           context.parsed_models.select do |m|
-            m.model == relation.klass
+            m.model.name == relation.klass.name
           end&.first&.type
-
         end
       end
     end

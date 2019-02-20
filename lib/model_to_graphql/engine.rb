@@ -138,7 +138,7 @@ module ModelToGraphql
     end
 
     def find_meta(model_class)
-      @models.select { |m| m.model == model_class }&.first
+      @models.select { |m| m.model.name == model_class.name }&.first
     end
 
     def parsed_models
@@ -146,7 +146,7 @@ module ModelToGraphql
     end
 
     def meta_type_of(model_class)
-      parsed_models.select { |m| m.model == model_class }&.first
+      parsed_models.select { |m| m.model.name == model_class.name }&.first
     end
 
     def type_of(model_class)
