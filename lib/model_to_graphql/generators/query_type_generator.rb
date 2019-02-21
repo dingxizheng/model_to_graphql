@@ -55,7 +55,7 @@ module ModelToGraphql
       def self.make_argument_resolver(arg_name, field_name, operator = nil)
         @argument_hanlders[arg_name.to_s] = -> (scope, raw_value) {
           value = raw_value
-          unless raw_value.is_a?(String) && raw_value.blank?
+          if raw_value.is_a?(String) && raw_value.blank?
             value = nil
           end
 
