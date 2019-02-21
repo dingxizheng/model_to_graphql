@@ -23,10 +23,8 @@ module ModelToGraphql
     attr_accessor :config
 
     def initialize(config)
-      @config   = config
-      @promises = []
-      @models   = []
-      @initialized = Promise.new
+      @config = config
+      clean_up
     end
 
     Contract String => C::Any
@@ -43,6 +41,12 @@ module ModelToGraphql
       Dir[File.join(model_def_path, "*.rb")].each do |file|
         require file
       end
+    end
+
+    def clean_up
+      @promises = []
+      @models   = []
+      @initialized = Promise.new
     end
 
     def bootstrap
