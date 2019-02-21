@@ -55,11 +55,11 @@ module ModelToGraphql
       def self.make_argument_resolver(arg_name, field_name, operator = nil)
         @argument_hanlders[arg_name.to_s] = -> (scope, value) {
           if operator.nil?
-            scope.where("#{field_name}": value)
+            scope.and("#{field_name}": value)
           elsif operator.to_s == "regex"
-            scope.where("#{field_name}": { "$#{operator}": /#{value}/ })
+            scope.and("#{field_name}": { "$#{operator}": /#{value}/ })
           else
-            scope.where("#{field_name}": { "$#{operator}": value })
+            scope.and("#{field_name}": { "$#{operator}": value })
           end
         }
       end

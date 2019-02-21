@@ -53,7 +53,7 @@ module ModelToGraphql
         if !object.nil? && self.class.current_relation
           base_selector     = authorized_scope.selector
           relation_selector = object.send(self.class.current_relation.name).selector
-          self.class.model_class.where(base_selector).where(relation_selector)
+          self.class.model_class.where(base_selector).and(relation_selector)
         else
           authorized_scope
         end
