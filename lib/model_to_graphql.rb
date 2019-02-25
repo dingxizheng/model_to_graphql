@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require "mongoid"
-require "graphql"
-require "model_to_graphql/version"
-
+require "contracts"
 module ModelToGraphql
+  include Contracts::Core
+  C = Contracts
+
   class Error < StandardError; end
   # Your code goes here...
 
@@ -17,17 +17,14 @@ module ModelToGraphql
     # Mongoid is set as default
     # 
     # @param orm [Symbol]
-    # @return nil
     def use_orm(orm = :mongoid)
       config(:orm, orm)
     end
 
-    def model_scan_dir(model_scan_dir)
-      config(:model_dir, model_scan_dir)
-    end
-
-    def exclude_models(*models_to_excluded)
-      config(:excluded_models, models_to_excluded)
+    # Define all the models should be excluded from the schema
+    Contract C::Args[String] => C::Any
+    def exclude_models(*models_to_be_excluded)
+      config(:excluded_models, models_to_be_excluded)
     end
 
     def model_definition_scan_dir(model_def_scan_dir)
@@ -74,6 +71,14 @@ module ModelToGraphql
     def config_options
       @config || {}
     end
+
+    def logger
+      @logger ||= defined?(Rails) ? Rails.logger : Logger.new(STDOUT)
+    end
+
+    def logger=(logger)
+      @logger = logger
+    end
   end
 end
 
@@ -82,9 +87,9 @@ if defined?(Mongoid) && defined?(Mongoid::Fields)
   require_relative "mongoid_setup.rb"
 end
 
+require_relative "model_to_graphql/version"
 require_relative "graphql_setup.rb"
 require_relative "model_to_graphql/objects/field.rb"
-require_relative "model_to_graphql/objects/link.rb"
 require_relative "model_to_graphql/objects/model.rb"
 require_relative "model_to_graphql/definitions/model_definition.rb"
 require_relative "model_to_graphql/generators/type_generator.rb"
@@ -94,3 +99,5 @@ require_relative "model_to_graphql/generators/model_query_generator.rb"
 require_relative "model_to_graphql/engine.rb"
 require_relative "model_to_graphql/types/any_type.rb"
 require_relative "model_to_graphql/types/model_type.rb"
+require_relative "model_to_graphql/field_holders/query_resolver.rb"
+require_relative "model_to_graphql/field_holders/single_resolver.rb"

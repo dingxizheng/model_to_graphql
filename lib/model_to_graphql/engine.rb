@@ -23,43 +23,45 @@ module ModelToGraphql
     attr_accessor :config
 
     def initialize(config)
-      @config = config
+      @config      = config
+      @initialized = Promise.new
       clean_up
-    end
-
-    Contract String => C::Any
-    def scan_models(model_path)
-      # Load all models
-      Dir[File.join(model_path, "*.rb")].each do |file|
-        require file
-      end
-    end
-
-    Contract String => C::Any
-    def scan_model_definitions(model_def_path)
-      # Load all models
-      Dir[File.join(model_def_path, "*.rb")].each do |file|
-        require file
-      end
     end
 
     def clean_up
       @promises = []
       @models   = []
-      @initialized = Promise.new
+    end
+
+    # Return all models that should be included at the top query type
+    def top_level_fields
+      Mongoid.models.reject do |model|
+        (@config[:excluded_models] | []).include?(model.name) || model.embedded?
+      end
     end
 
     def bootstrap
-      # scan_models(@config[:model_dir])
-      scan_model_definitions(@config[:model_def_dir])
       Mongoid.models.each do |model|
-        next if (@config[:excluded_models] | []).include?(model)
-
-        model_def = find_model_def(model) || create_model_def(model)
+        ModelToGraphql.logger.debug "ModelToGQL | Processing Model: #{model.name}"
+        if (@config[:excluded_models] | []).include?(model.name)
+          ModelToGraphql.logger.debug "ModelToGQL | Skipping Model: #{model.name}"
+          next
+        end
+        model_def      = find_model_def(model) || create_model_def(model)
         model_def.discover_links(self)
-        fields = model_def.merged_fields
+        fields         = model_def.merged_fields
         custom_filters = model_def.filters || []
-        raw_fields = model_def.raw_fields || []
+        raw_fields     = model_def.raw_fields || []
+
+        model_details = %Q{
+Model Definition: #{model_def}
+Embeded?:         #{model.embedded?}
+Fields:           #{fields.map(&:name)}
+Custom Filters:   #{custom_filters.map { |f| f[:name] }}
+Raw Fields:       #{raw_fields.map { |f| f[:name] }}
+        }
+
+        ModelToGraphql.logger.debug "ModelToGQL | Model details: #{model_details}"
 
         type      = make_type("#{model.name}Type", fields, raw_fields)
         sort_enum = make_sort_key_enum("#{model.name}SortKey", fields)
@@ -74,11 +76,11 @@ module ModelToGraphql
         end
 
         model_meta = Model.new(model,
-          type: type,
-          query_type: query,
-          model_resolver: resolver,
+          type:            type,
+          query_type:      query,
+          model_resolver:  resolver,
           single_resolver: single_query_resolver,
-          query_keys: query_keys
+          query_keys:      query_keys
         )
         @models << model_meta
       end
@@ -89,7 +91,6 @@ module ModelToGraphql
         end
         promise.resolve
       end
-      initialized.fulfill(@models)
       self
     end
 
@@ -126,10 +127,12 @@ module ModelToGraphql
     end
 
     def find_model_def(model)
+      ModelToGraphql.logger.debug "ModelToGQL | Looking for definition for model: #{model.name} ..."
       ModelDefinition.definitions.select { |definition| model == definition.model }&.first
     end
 
     def create_model_def(model)
+      ModelToGraphql.logger.debug "ModelToGQL | Creating definition for model: #{model.name} ..."
       Class.new(ModelDefinition) do
         define_for_model model
       end
@@ -158,7 +161,7 @@ module ModelToGraphql
     end
 
     def return_type_instrumentor
-      ReturnTypeInstrumentor.new(method(:type_of).to_proc)
+      ReturnTypeInstrumentor.new(method(:meta_type_of).to_proc)
     end
   end
 end

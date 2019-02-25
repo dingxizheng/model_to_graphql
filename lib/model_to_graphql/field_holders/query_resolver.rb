@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
+require_relative "../types/model_type.rb"
+require_relative "../field_holders/base_resolver.rb"
 require_relative "../object_cache.rb"
+require_relative "../types/paged_result_type.rb"
+
 module ModelToGraphql
-  module Types
-    class ModelType < GraphQL::Schema::Object
+  module FieldHolders
+    class QueryResolver < BaseResolver
       include ModelToGraphql::ObjectCache
 
       class << self
@@ -18,14 +22,13 @@ module ModelToGraphql
         end
 
         def [](model)
-          graphql_obj_name = "#{model.name}GraphqlTypeResolver"
-          # Get it from cache or create a new one
+          graphql_obj_name = "#{model.name}GraphqlQueryRecordResolver"
           get_object(graphql_obj_name) || cache(graphql_obj_name,
-            Class.new(ModelToGraphql::Types::ModelType) do
+            Class.new(ModelToGraphql::FieldHolders::QueryResolver) do
               add_model_class model
-              description     "Model Type Resolver"
               graphql_name    graphql_obj_name
-              field           :name, String, null: true # Only used for defining the schema
+              argument        :id, String, required: false
+              type            String, null: true
             end
           )
         end
