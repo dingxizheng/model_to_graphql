@@ -17,6 +17,10 @@ module ModelToGraphql
           end
         end
       end
+
+      def inspect
+        "#<#{graphql_name}>"
+      end
     end
   end
 end

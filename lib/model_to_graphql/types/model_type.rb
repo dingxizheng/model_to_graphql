@@ -18,6 +18,10 @@ module ModelToGraphql
             field :name, String, null: true
           end
         end
+
+        def inspect
+          "#<#{graphql_name}>"
+        end
       end
     end
   end
