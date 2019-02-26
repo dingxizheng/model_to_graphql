@@ -14,7 +14,7 @@ module ModelToGraphql
           Class.new(ModelToGraphql::Types::ModelType) do
             add_model_class model
             description "Model Type Resolver"
-            graphql_name "#{model.name}GraphqlTypeResolver"
+            graphql_name "#{model.name.delete("::")}GraphqlTypeResolver"
             field :name, String, null: true
           end
         end
