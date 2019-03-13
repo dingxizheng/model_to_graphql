@@ -12,7 +12,7 @@ module ModelToGraphql
     class HasOneRelationResolverGenerator < GraphQL::Schema::Resolver
 
       def resolve
-        ModelToGraphql::Loaders::HasOneLoader.for(relation.klass, relation.name).load(object.id)
+        ModelToGraphql::Loaders::HasOneLoader.for(relation.klass, relation.name).load(object.id.to_s)
       end
 
       def relation
