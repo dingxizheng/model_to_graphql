@@ -13,7 +13,7 @@ module ModelToGraphql
 
       def resolve
         if relation.klass
-          selected_pair = relation.klass.relations.select { |pair| relation.klass < pair[1].klass && pair[1].is_a?(Mongoid::Association::Referenced::BelongsTo) }
+          selected_pair = relation.klass.relations.select { |name, rlt| relation.klass < rlt.klass && rlt.is_a?(Mongoid::Association::Referenced::BelongsTo) }
           relation_name = selected_pair[0]
         end
         raise StandardError, "Not able to resolve the inverse relation_nmae of has_one relation #{relation.name} on model #{relation.klass}" if relation_name.nil?
