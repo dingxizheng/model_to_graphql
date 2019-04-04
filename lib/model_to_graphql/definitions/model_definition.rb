@@ -79,9 +79,9 @@ module ModelToGraphql
                       .map    { |_, field| ModelToGraphql::Objects::Field.new(field) }
                       .select { |f| !@exclude_fields&.include?(f.name.to_s) }
 
-        change_sorable   = ->(f) { @unsortable_fields&.include?(f.name.to_s) && f.sortable = false }
+        change_sorable   = ->(f) { @unsortable_fields&.include?(f.name.to_s)   && f.sortable = false }
         change_filerable = ->(f) { @unfilterable_fields&.include?(f.name.to_s) && f.filterable = false }
-        change_editable  = ->(f) { @uneditable_fields&.include?(f.name.to_s) && f.editable = false }
+        change_editable  = ->(f) { @uneditable_fields&.include?(f.name.to_s)   && f.editable = false }
 
         obj_fields
           .each(&change_sorable)

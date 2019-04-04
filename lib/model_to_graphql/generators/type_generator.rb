@@ -55,6 +55,10 @@ module ModelToGraphql
         super || graphql_name
       end
 
+      def self.inspect
+        "#<#{graphql_name}>"
+      end
+
       def self.define_raw_fields(raw_fields = [])
         raw_fields.each do |raw_field|
           field raw_field[:name], raw_field[:type], **raw_field[:options]

@@ -63,14 +63,14 @@ Raw Fields:       #{raw_fields.map { |f| f[:name] }}
 
         ModelToGraphql.logger.debug "ModelToGQL | Model details: #{model_details}"
 
-        type      = make_type("#{model.name}Type", fields, raw_fields)
-        sort_enum = make_sort_key_enum("#{model.name}SortKey", fields)
+        type      = make_type("#{model_name(model)}Type", fields, raw_fields)
+        sort_enum = make_sort_key_enum("#{model_name(model)}SortKey", fields)
         query     = nil
         resolver  = nil
         single_query_resolver = nil
         if !model.embedded?
-          query                 = make_query_type("#{model.name}Query", fields, custom_filters)
-          query_keys            = make_query_key_enum("#{model.name}QueryKey", query)
+          query                 = make_query_type("#{model_name(model)}Query", fields, custom_filters)
+          query_keys            = make_query_key_enum("#{model_name(model)}QueryKey", query)
           resolver              = make_model_query_resolver(model, type, query, sort_enum)
           single_query_resolver = make_single_query_resolver(model, type)
         end
@@ -162,6 +162,10 @@ Raw Fields:       #{raw_fields.map { |f| f[:name] }}
 
     def return_type_instrumentor
       ReturnTypeInstrumentor.new(method(:meta_type_of).to_proc)
+    end
+
+    def model_name(model)
+      model.name.delete("::")
     end
   end
 end
