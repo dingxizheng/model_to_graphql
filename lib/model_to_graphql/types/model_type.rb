@@ -18,7 +18,7 @@ module ModelToGraphql
         end
 
         def [](model)
-          graphql_obj_name = "#{model.name}GraphqlTypeResolver"
+          graphql_obj_name = "#{model_name(model)}GraphqlTypeResolver"
           # Get it from cache or create a new one
           get_object(graphql_obj_name) || cache(graphql_obj_name,
             Class.new(ModelToGraphql::Types::ModelType) do
@@ -32,6 +32,10 @@ module ModelToGraphql
 
         def inspect
           "#<#{graphql_name}>"
+        end
+
+        def model_name(model)
+          model.name.delete("::")
         end
       end
     end

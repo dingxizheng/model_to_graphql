@@ -35,6 +35,10 @@ module ModelToGraphql
       def self.klass
         @klass
       end
+
+      def self.inspect
+        "#<Single#{klass}Resolver>"
+      end
     end
   end
 end

@@ -6,7 +6,7 @@ module ModelToGraphql
       def self.[](return_type, name = nil)
         Class.new(GraphQL::Schema::Object) do
           description "Paged result"
-          graphql_name "#{ name || return_type.name}PagedResult"
+          graphql_name "#{ name || return_type.graphql_name}PagedResult"
 
           field :total, Integer, null: false
           field :page,  Integer, null: false

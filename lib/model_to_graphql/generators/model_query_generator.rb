@@ -69,7 +69,6 @@ module ModelToGraphql
         Class.new(ModelQueryGenerator) do
           scope_resolver scope_resolver_proc
           to_resolve model, query_type
-          type [return_type], null: true
           type ModelToGraphql::Types::PagedResultType[return_type], null: false
           argument :sort, sort_key_enum, required: false
         end
@@ -112,6 +111,10 @@ module ModelToGraphql
           puts "Failed to resolve the scope for #{model} when the context is #{context}"
           raise e
         end
+      end
+
+      def self.inspect
+        "#<Query#{model_class}Resolver>"
       end
     end
   end

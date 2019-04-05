@@ -33,6 +33,7 @@ module ModelToGraphql
       ].freeze
 
       def self.to_graphql_type(gl_name, fields, raw_fields = [], guard_proc = nil)
+        ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
         Class.new(TypeGenerator) do
           graphql_name gl_name
           define_fields fields
@@ -77,16 +78,7 @@ module ModelToGraphql
           if f.name == :id
             field :id, ID, null: false
           # If resolver is provided
-          elsif !f.resolver.nil? && f.resolver.is_a?(Promise)
-            # Wait until resolver promise is resolved
-            f.resolver
-              .then do |rsl|
-                field f.name, resolver: rsl
-              end
-              .then(nil, proc { |err| puts "#{f.name} is not supported! message: #{err}" })
-
-          # If resovler is not a promise
-          elsif !f.resolver.nil?
+          elsif f.resolver.present?
             field f.name, resolver: f.resolver
           else
             field f.name, graphql_prime_type(f.type, f.element), null: f.null?

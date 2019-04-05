@@ -79,6 +79,10 @@ module ModelToGraphql
     def logger=(logger)
       @logger = logger
     end
+
+    def level=(level)
+      logger.level = level
+    end
   end
 end
 
@@ -101,3 +105,4 @@ require_relative "model_to_graphql/types/any_type.rb"
 require_relative "model_to_graphql/types/model_type.rb"
 require_relative "model_to_graphql/field_holders/query_resolver.rb"
 require_relative "model_to_graphql/field_holders/single_resolver.rb"
+require_relative "model_to_graphql/field_holders/query_key_resolver.rb"

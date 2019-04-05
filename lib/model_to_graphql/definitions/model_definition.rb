@@ -3,19 +3,29 @@
 require "contracts"
 require_relative "../contracts/contracts.rb"
 require_relative "../objects/field.rb"
-require_relative "../orm/relation_helper.rb"
 
 FIELD = ModelToGraphql::Objects::Field
 
 module ModelToGraphql
   module Definitions
     class ModelDefinition
-      include ORM::RelationHelper
       include Contracts::Core
       C = Contracts
 
+      @@descendant_classes = []
+      @@descendant_classes_map = {}
+
       class << self
         attr_accessor :filters, :raw_fields
+        # def inherited(child_class)
+        #   @@descendant_classes ||= []
+        #   @@descendant_classes << child_class
+        # end
+
+        # def clear_descendants
+        #   @@descendant_classes = []
+        #   @@descendant_classes_map = {}
+        # end
       end
 
       Contract nil => C::ArrayOf[Class]
@@ -23,13 +33,17 @@ module ModelToGraphql
         ModelDefinition.descendants
       end
 
-      Contract MongoidModel => MongoidModel
+      Contract MongoidModel => C::Any
       def self.define_for_model(model_class)
-        @model_class = model_class
+        @model_class = model_class.name
       end
 
       Contract nil => C::Maybe[MongoidModel]
       def self.model
+        @model_class.safe_constantize
+      end
+
+      def self.model_name
         @model_class
       end
 

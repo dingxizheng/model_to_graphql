@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module ModelToGraphql
   module Loaders
     class HasOneLoader < GraphQL::Batch::Loader
