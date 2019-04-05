@@ -31,20 +31,21 @@ module ModelToGraphql
           end.map { |m| m.type }
           ModelToGraphql.logger.debug "ModelToGQL | Resolved the possible types for relation #{relation}: [#{graphql_types}]"
           type_name = "Possible#{relation.name.capitalize}Type"
+          engine_context = context
           self.resolved = Class.new(GraphQL::Schema::Union) do
+                            @@context = engine_context
                             graphql_name(type_name)
                             possible_types(*graphql_types)
+                            def self.resolve_type(obj, _ctx)
+                              @@context.find_meta(obj.class).type
+                            rescue => _
+                              fail "Couldn't find the return type of object #{obj} when its class it's #{obj.class}"
+                            end
                           end
         end
 
         def inspect
           "#<#{graphql_name}>"
-        end
-
-        def resolve_type(obj, _ctx)
-          context.find_meta(obj.class).type
-        rescue => _
-          fail "Couldn't find the return type of object #{obj} when its class it's #{obj.class}"
         end
       end
     end
