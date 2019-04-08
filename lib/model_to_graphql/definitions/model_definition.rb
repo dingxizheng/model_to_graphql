@@ -106,6 +106,10 @@ module ModelToGraphql
           .map    { |name, field| ModelToGraphql::Objects::Field.new(name, field) }
           .select { |f| !@exclude_fields&.include?(f.name) }
 
+        if model.has_child_model? && model.fields["_type"].nil?
+          custom_fields << ModelToGraphql::Objects::Field.new("_type", type: String)
+        end
+
         custom_fields
           .each(&change_sorable)
           .each(&change_filerable)

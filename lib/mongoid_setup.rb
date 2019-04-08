@@ -47,14 +47,11 @@ end
 
 # Add option method to Mongoid::Document
 module Mongoid
-
   module Association
-
     # This module provides behaviors shared between Association types.
     #
     # @since 7.0
     module Relatable
-
       def klass
         @klass ||= relation_class_name.constantize
       rescue
@@ -78,10 +75,19 @@ module Mongoid
         @turn_on_graphql = boolean
       end
 
+      def has_child_model(boolean = true)
+        @has_child_model = boolean
+      end
+
       def graphql_turned_on?
         # return false if embedded_model?
         return false if @turn_on_graphql.nil?
         @turn_on_graphql
+      end
+
+      def has_child_model?
+        return false if @has_child_model.nil?
+        @has_child_model
       end
 
       # Check if current model is embedded in other models
