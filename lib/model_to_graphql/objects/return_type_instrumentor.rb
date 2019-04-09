@@ -94,7 +94,9 @@ module ModelToGraphql
             type(actual_return_type)
           end
         elsif actual_resolver_class
-          GraphQL::Schema::Field.from_options(field.name, resolver: actual_resolver_class).to_graphql
+          GraphQL::Schema::Field.from_options(field.name, resolver: actual_resolver_class).to_graphql.tap do |d|
+            d.metadata[:guard] = field.metadata[:guard]
+          end
         else
           field
         end
