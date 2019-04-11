@@ -21,7 +21,7 @@ module ModelToGraphql
         end
 
         if unscoped
-          ModelToGraphql::Loaders::HasOneLoader.for(relation.klass.unscoped, relation.inverse.to_s).load(object.id.to_s)
+          ModelToGraphql::Loaders::HasOneLoader.for(relation.klass, relation.inverse.to_s, unscoped: true).load(object.id.to_s)
         else
           ModelToGraphql::Loaders::HasOneLoader.for(relation.klass, relation.inverse.to_s).load(object.id.to_s)
         end

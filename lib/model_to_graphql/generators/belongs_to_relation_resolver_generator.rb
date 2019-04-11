@@ -22,11 +22,7 @@ module ModelToGraphql
           unscoped = self.class.is_relation_unscoped_proc.call(relation)
         end
 
-        if unscoped
-          ModelToGraphql::Loaders::RecordLoader.for(model_class.unscoped).load(foreign_key&.to_s)
-        else
-          ModelToGraphql::Loaders::RecordLoader.for(model_class).load(foreign_key&.to_s)
-        end
+        ModelToGraphql::Loaders::RecordLoader.for(model_class, unscoped: unscoped).load(foreign_key&.to_s)
       end
 
       def relation_model_class(relation, object)
