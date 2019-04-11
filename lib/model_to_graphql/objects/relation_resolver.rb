@@ -22,13 +22,13 @@ module ModelToGraphql
       def resolve
         case relation
         when Mongoid::Association::Referenced::BelongsTo
-          BelongsToRelationResolverGenerator.to_relation_resolver(relation, resolve_belongs_to_type)
+          BelongsToRelationResolverGenerator.to_relation_resolver(relation, resolve_belongs_to_type, context.config[:is_relation_unscoped])
         when Mongoid::Association::Embedded::EmbedsOne
           EmbedsOneRelationResolverGenerator.to_relation_resolver(relation, get_model_type(relation.klass))
         when Mongoid::Association::Embedded::EmbedsMany
           EmbedsManyRelationResolverGenerator.to_relation_resolver(relation, get_model_type(relation.klass))
         when Mongoid::Association::Referenced::HasOne
-          HasOneRelationResolverGenerator.to_relation_resolver(relation, get_model_type(relation.klass))
+          HasOneRelationResolverGenerator.to_relation_resolver(relation, get_model_type(relation.klass), context.config[:is_relation_unscoped])
         when Mongoid::Association::Referenced::HasMany
           ModelToGraphql::FieldHolders::QueryResolver[relation.klass, "#{relation.inverse_class}#{relation.name}", relation: relation]
         else

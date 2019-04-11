@@ -15,7 +15,7 @@ module ModelToGraphql
 
     # Define which orm framework to be used.
     # Mongoid is set as default
-    # 
+    #
     # @param orm [Symbol]
     def use_orm(orm = :mongoid)
       config(:orm, orm)
@@ -29,6 +29,16 @@ module ModelToGraphql
 
     def model_definition_scan_dir(model_def_scan_dir)
       config(:model_def_dir, model_def_scan_dir)
+    end
+
+    def is_relation_unscoped(proc = nil, &block)
+      if proc.is_a? Proc
+        config(:is_relation_unscoped, proc)
+      elsif block_given?
+        config(:is_relation_unscoped, block)
+      else
+        raise ArgumentError, "Proc must be provided!"
+      end
     end
 
     # Pass an proc to resolve if current query is allowed

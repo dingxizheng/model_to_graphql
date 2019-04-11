@@ -4,17 +4,29 @@ require_relative "../loaders/record_loader.rb"
 
 module ModelToGraphql
   module Generators
-
     unless defined?(GraphQL::Schema::Resolver)
       raise "Graphql is not loaded!!!"
     end
 
     class BelongsToRelationResolverGenerator < GraphQL::Schema::Resolver
+      class << self
+        attr_accessor :is_relation_unscoped_proc, :relation
+      end
 
       def resolve
         model_class = relation_model_class(relation, object)
         foreign_key = object.send("#{relation.name}_id")
-        ModelToGraphql::Loaders::RecordLoader.for(model_class).load(foreign_key&.to_s)
+        unscoped = false
+
+        if self.class.is_relation_unscoped_proc.present?
+          unscoped = self.class.is_relation_unscoped_proc.call(relation)
+        end
+
+        if unscoped
+          ModelToGraphql::Loaders::RecordLoader.for(model_class.unscoped).load(foreign_key&.to_s)
+        else
+          ModelToGraphql::Loaders::RecordLoader.for(model_class).load(foreign_key&.to_s)
+        end
       end
 
       def relation_model_class(relation, object)
@@ -23,14 +35,6 @@ module ModelToGraphql
 
       def relation
         self.class.relation
-      end
-
-      def self.for_relation(relation)
-        @relation = relation
-      end
-
-      def self.relation
-        @relation
       end
 
       # Resolve the model class of a polymorphic relation
@@ -42,10 +46,11 @@ module ModelToGraphql
         end
       end
 
-      def self.to_relation_resolver(relation, return_type)
+      def self.to_relation_resolver(relation, return_type, is_relation_unscoped_proc = nil)
         Class.new(BelongsToRelationResolverGenerator) do
           type return_type, null: true
-          for_relation relation
+          self.is_relation_unscoped_proc = is_relation_unscoped_proc
+          self.relation = relation
         end
       end
     end
