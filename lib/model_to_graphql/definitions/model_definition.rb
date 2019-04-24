@@ -40,7 +40,7 @@ module ModelToGraphql
 
       Contract nil => C::Maybe[MongoidModel]
       def self.model
-        @model_class.safe_constantize
+        @model_class.constantize
       end
 
       def self.model_name

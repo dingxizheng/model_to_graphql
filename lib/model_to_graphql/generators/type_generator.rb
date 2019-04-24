@@ -9,7 +9,6 @@ require_relative "../types/date_type.rb"
 
 module ModelToGraphql
   module Generators
-
     unless defined?(GraphQL::Schema::Object)
       raise "Graphql is not loaded!!!"
     end
@@ -38,16 +37,19 @@ module ModelToGraphql
           graphql_name gl_name
           define_fields fields
           define_raw_fields raw_fields
-          # If guard_proc is given
-          if !guard_proc.nil? && guard_proc.is_a?(Proc)
-            guard(-> (obj, args, ctx) {
-              guard_proc.call(obj, args, ctx)
-            })
+
+          @guard_proc = guard_proc
+          def self.authorized?(object, context)
+            if !@guard_proc.nil? && @guard_proc.is_a?(Proc)
+              @guard_proc.call(object, context)
+            else
+              true
+            end
           end
 
-          @@gl_name = gl_name
+          @gl_name = gl_name
           def self.name
-            @@gl_name
+            @gl_name
           end
         end
       end

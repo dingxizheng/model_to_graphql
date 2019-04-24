@@ -25,7 +25,7 @@ module ModelToGraphql
       @config      = config
       @model_names = nil
       @model_defintions_names = nil
-      @models      = []
+      @models = []
       clean_up
     end
 
@@ -36,14 +36,14 @@ module ModelToGraphql
       ModelToGraphql::FieldHolders::SingleResolver.clear
       ModelToGraphql::FieldHolders::QueryKeyResolver.clear
       # ModelDefinition.clear_descendants
-      @models   = []
+      @models = []
     end
 
     # Return all models that should be included at the top query type
     def top_level_fields
       collect_model_names
       @model_names.reject do |model_name|
-        model = model_name.safe_constantize
+        model = model_name.constantize
         (@config[:excluded_models] | []).include?(model_name) || model&.embedded?
       end
     end
@@ -64,7 +64,7 @@ module ModelToGraphql
       collect_model_names
       collect_model_definitions_names
       @model_names.each do |model_name|
-        model = model_name.safe_constantize
+        model = model_name.constantize
 
         ModelToGraphql.logger.debug "ModelToGQL | Processing Model: #{model.name}"
         if model.nil? || (@config[:excluded_models] | []).include?(model.name)
@@ -72,7 +72,7 @@ module ModelToGraphql
           next
         end
 
-        model_def      = find_model_def(model)&.safe_constantize || create_model_def(model)
+        model_def = find_model_def(model)&.constantize || create_model_def(model)
         model_def.discover_links(self)
         fields         = model_def.merged_fields
         custom_filters = model_def.filters || []
@@ -138,7 +138,7 @@ module ModelToGraphql
     def find_model_def(model)
       ModelToGraphql.logger.debug "ModelToGQL | Looking for definition for model: #{model.name} ..."
       @model_defintions_names.select do |definition_name|
-        definition = definition_name.safe_constantize
+        definition = definition_name.constantize
         model == definition.model
       end&.first
     end

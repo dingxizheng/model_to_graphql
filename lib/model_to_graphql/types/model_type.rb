@@ -14,7 +14,7 @@ module ModelToGraphql
         end
 
         def model_class
-          self.model_class_name.safe_constantize
+          self.model_class_name.constantize
         end
 
         def [](model)

@@ -4,7 +4,6 @@ module GraphQL
   class Schema
     class Object
       class << self
-
         ##
         # Mount generated graphql mutations from specified engine
         #
@@ -26,7 +25,7 @@ module GraphQL
           raise ArgumentError, "engine must be a ModelToGraphql::Engine instance" unless engine.is_a? ModelToGraphql::Engine
 
           engine.top_level_fields.each do |model_name|
-            model = model_name.safe_constantize
+            model = model_name.constantize
             ModelToGraphql.logger.debug "ModelToGQL | Add top level fields for model: #{ model.name }"
 
             field model_name(model_name).underscore.pluralize, resolver: ModelToGraphql::FieldHolders::QueryResolver[model] do
