@@ -7,15 +7,29 @@ require_relative "../types/paged_result_type.rb"
 
 module ModelToGraphql
   module Generators
-
     unless defined?(GraphQL::Schema::Resolver)
       raise "Graphql is not loaded!!!"
     end
 
     class ModelQueryGenerator < GraphQL::Schema::Resolver
+      argument :page, Integer, required: false, default_value: 1,  prepare: :validate_page
+      argument :per,  Integer, required: false, default_value: 10, prepare: :validate_per_page
 
-      argument :page, Integer, required: false, default_value: 1
-      argument :per,  Integer, required: false, default_value: 10
+      def validate_page(page)
+        if page && page >= 99999999
+          raise GraphQL::ExecutionError, "page is too big!"
+        else
+          page
+        end
+      end
+
+      def validate_per_page(per)
+        if per && per > 50
+          raise GraphQL::ExecutionError, "not allowed to return more than 50 items in one page!"
+        else
+          per
+        end
+      end
 
       # @params filter [Hash]
       def resolve(filter: {}, **args)
