@@ -12,24 +12,20 @@ module ModelToGraphql
     end
 
     class ModelQueryGenerator < GraphQL::Schema::Resolver
-      argument :page, Integer, required: false, default_value: 1,  prepare: :validate_page
-      argument :per,  Integer, required: false, default_value: 10, prepare: :validate_per_page
-
-      def validate_page(page)
+      argument :page, Integer, required: false, default_value: 1,  prepare: -> (page, _ctx) {
         if page && page >= 99999999
           raise GraphQL::ExecutionError, "page is too big!"
         else
           page
         end
-      end
-
-      def validate_per_page(per)
-        if per && per > 50
+      }
+      argument :per,  Integer, required: false, default_value: 10, prepare: -> (per, _ctx) {
+        if per && per > 100
           raise GraphQL::ExecutionError, "not allowed to return more than 50 items in one page!"
         else
           per
         end
-      end
+      }
 
       # @params filter [Hash]
       def resolve(filter: {}, **args)
