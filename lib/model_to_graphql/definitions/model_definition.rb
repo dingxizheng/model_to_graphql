@@ -133,6 +133,7 @@ module ModelToGraphql
         discover_links_of :belongs_to,  context: context
         discover_links_of :has_one,     context: context
         discover_links_of :has_many,    context: context
+        discover_links_of :has_and_belongs_to_many,    context: context
         discover_links_of :embeds_one,  context: context
         discover_links_of :embeds_many, context: context
       end

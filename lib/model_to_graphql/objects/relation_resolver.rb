@@ -31,6 +31,8 @@ module ModelToGraphql
           HasOneRelationResolverGenerator.to_relation_resolver(relation, get_model_type(relation.klass), context.config[:is_relation_unscoped])
         when Mongoid::Association::Referenced::HasMany
           ModelToGraphql::FieldHolders::QueryResolver[relation.klass, "#{relation.inverse_class}#{relation.name}", relation: relation]
+        when Mongoid::Association::Referenced::HasAndBelongsToMany
+          ModelToGraphql::FieldHolders::QueryResolver[relation.klass, "#{relation.inverse_class}#{relation.name}", relation: relation]
         else
           puts "#{relation.class} is not supported!!"
         end
