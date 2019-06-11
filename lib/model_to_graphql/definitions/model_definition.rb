@@ -145,7 +145,7 @@ module ModelToGraphql
       end
 
       # Define a custom filter
-      Contract C::Or[String, Symbol], C::Maybe[Class], { handler: Proc } => C::Any
+      Contract C::Or[String, Symbol], C::Or[C::ArrayOf[C::Any], Class], { handler: Proc } => C::Any
       def self.filter(name, input_type, handler: nil)
         self.filters ||= []
         self.filters << { name: name.to_sym, input_type: input_type, handler: handler }
