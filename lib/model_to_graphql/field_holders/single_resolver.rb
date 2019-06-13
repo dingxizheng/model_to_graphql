@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../types/model_type.rb"
-require_relative "../field_holders/base_resolver.rb"
-require_relative "../object_cache.rb"
-
 module ModelToGraphql
   module FieldHolders
     class SingleResolver < BaseResolver

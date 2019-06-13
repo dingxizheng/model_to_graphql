@@ -1,23 +1,12 @@
 # frozen_string_literal: true
 
-require "contracts"
-require_relative "./objects/relation_resolver.rb"
-require_relative "./types/model_type.rb"
-require_relative "./types/union_model_type.rb"
-require_relative "./generators/type_generator.rb"
-require_relative "./generators/sort_key_enum_generator.rb"
-require_relative "./generators/query_type_generator.rb"
-require_relative "./generators/single_record_query_generator.rb"
-require_relative "./objects/return_type_instrumentor.rb"
-
 module ModelToGraphql
   class Engine
     include ModelToGraphql::Generators
     include ModelToGraphql::Objects
     include ModelToGraphql::Definitions
     include ModelToGraphql::Types
-    include Contracts::Core
-    C = Contracts
+    include ModelToGraphql::FieldHolders
 
     attr_accessor :config
 
@@ -30,11 +19,11 @@ module ModelToGraphql
     end
 
     def clean_up
-      ModelToGraphql::Types::ModelType.clear
-      ModelToGraphql::Types::UnionModelType.clear
-      ModelToGraphql::FieldHolders::QueryResolver.clear
-      ModelToGraphql::FieldHolders::SingleResolver.clear
-      ModelToGraphql::FieldHolders::QueryKeyResolver.clear
+      ModelType.clear
+      UnionModelType.clear
+      QueryResolver.clear
+      SingleResolver.clear
+      QueryKeyResolver.clear
       # ModelDefinition.clear_descendants
       @models = []
     end
@@ -48,11 +37,8 @@ module ModelToGraphql
       end
     end
 
+    # Get all model classes
     def collect_model_names
-      # # Load all models
-      # Dir[File.join(Rails.root, "app/models", "**", "*.rb")].each do |file|
-      #   require_dependency file
-      # end
       @model_names = Mongoid.models.map(&:name).uniq
     end
 
@@ -63,6 +49,7 @@ module ModelToGraphql
     def bootstrap
       collect_model_names
       collect_model_definitions_names
+      puts "collections: #{collect_model_definitions_names}"
       @model_names.each do |model_name|
         model = model_name.constantize
 
@@ -87,7 +74,7 @@ module ModelToGraphql
         single_resolver = nil
 
         if !model.embedded?
-          return_type           = ModelToGraphql::Types::ModelType[model]
+          # return_type           = ModelType[model]
           query                 = make_query_type("#{model_name(model)}Query", fields, custom_filters)
           query_keys            = make_query_key_enum("#{model_name(model)}QueryKey", query)
           model_resolver        = make_model_query_resolver(model, type, query, sort_enum)
@@ -176,6 +163,43 @@ module ModelToGraphql
 
     def model_name(model)
       model.name.delete("::")
+    end
+
+    def prepare!
+      attach_reloader
+    end
+
+    def attach_reloader
+      return unless defined?(Rails)
+      model_to_gql_engine = self
+      Rails.application.config.after_initialize do |app|
+        model_to_gql_engine.bootstrap
+        model_to_gql_engine.attach_to_schema
+
+        ActiveSupport::Reloader.after_class_unload do
+          model_to_gql_engine.clean_up
+        end
+
+        ActiveSupport::Reloader.to_prepare do
+          model_to_gql_engine.bootstrap
+          model_to_gql_engine.attach_to_schema
+        end
+      end
+    end
+
+    def instrument_schema(schema)
+      @schema ||= schema.name
+    end
+
+    def mount_queries_to(query_type)
+      @query_type ||= query_type.name
+    end
+
+    def attach_to_schema
+      query_type = @query_type.safe_constantize
+      schema     = @schema.safe_constantize
+      query_type.mount_queries(self)
+      schema.instrument(:field, return_type_instrumentor)
     end
   end
 end

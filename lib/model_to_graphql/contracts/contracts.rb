@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "promise.rb"
-
 class MongoidModel
   def self.valid?(val)
     if val&.is_a? Class

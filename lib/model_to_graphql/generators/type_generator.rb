@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-require "contracts"
-require "promise.rb"
-require_relative "../objects/field.rb"
-require_relative "../types/any_type.rb"
-require_relative "../types/raw_json.rb"
-require_relative "../types/date_type.rb"
-
 module ModelToGraphql
   module Generators
     unless defined?(GraphQL::Schema::Object)

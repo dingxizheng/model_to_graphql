@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "contracts"
-require_relative "../objects/field.rb"
-
 module ModelToGraphql
   module Generators
 

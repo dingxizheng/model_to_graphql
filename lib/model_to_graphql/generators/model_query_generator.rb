@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../objects/field.rb"
-require_relative "../types/any_type.rb"
-require_relative "../types/raw_json.rb"
-require_relative "../types/paged_result_type.rb"
-
 module ModelToGraphql
   module Generators
     unless defined?(GraphQL::Schema::Resolver)

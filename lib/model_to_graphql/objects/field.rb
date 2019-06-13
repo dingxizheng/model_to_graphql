@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "contracts"
-require_relative "../contracts/contracts.rb"
 require_relative "../orm/mongoid_settings.rb"
 
 module ModelToGraphql

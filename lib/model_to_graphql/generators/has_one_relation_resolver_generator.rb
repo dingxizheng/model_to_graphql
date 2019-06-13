@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../loaders/has_one_loader.rb"
-
 module ModelToGraphql
   module Generators
     unless defined?(GraphQL::Schema::Resolver)

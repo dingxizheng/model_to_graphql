@@ -1,28 +1,16 @@
 # frozen_string_literal: true
 
-module GraphQL
-  class Schema
-    class Object
-      class << self
-        ##
-        # Mount generated graphql mutations from specified engine
-        #
-        # === Parameters
-        # [engine (Engine)] The model engine
-        # def mount_mutations(engine)
-        #   engine.graphql_objects.each do |meta|
-        #     mutation_name = :"add_#{meta[:model].name.underscore.downcase}"
-        #     field mutation_name, mutation: meta[:graphql_mutation]
-        #   end
-        # end
-
+module ModelToGraphql
+  module Setup
+    module GraphqlSetup
+      module ClassMethods
         ##
         # Mount generated graphql queries from specified engine
         #
         # === Parameters
         # [engine (Engine)] The model engine
         def mount_queries(engine)
-          raise ArgumentError, "engine must be a ModelToGraphql::Engine instance" unless engine.is_a? ModelToGraphql::Engine
+          raise ArgumentError, "engine must be a ModelToGraphql::Engine instance" unless engine.is_a?(ModelToGraphql::Engine)
 
           engine.top_level_fields.each do |model_name|
             model = model_name.constantize
@@ -54,6 +42,14 @@ module GraphQL
           model.delete("::")
         end
       end
+
+      def self.prepended(base)
+        class << base
+          prepend ClassMethods
+        end
+      end
     end
   end
 end
+
+GraphQL::Schema::Object.prepend ModelToGraphql::Setup::GraphqlSetup

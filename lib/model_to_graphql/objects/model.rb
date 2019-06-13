@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "contracts"
-require_relative "../contracts/contracts.rb"
-
 module ModelToGraphql
   module Objects
     class Model

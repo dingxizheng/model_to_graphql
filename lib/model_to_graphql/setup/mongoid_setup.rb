@@ -53,9 +53,7 @@ module Mongoid
     # @since 7.0
     module Relatable
       def klass
-        @klass ||= relation_class_name.constantize
-      rescue
-        nil
+        @klass ||= relation_class_name.safe_constantize
       end
     end
   end

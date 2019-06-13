@@ -1,12 +1,58 @@
 # frozen_string_literal: true
-
+require "promise"
 require "contracts"
+
 module ModelToGraphql
-  include Contracts::Core
-  C = Contracts
+
+  require "model_to_graphql/version"
+  require "model_to_graphql/setup/setup"
+
+  require "model_to_graphql/object_cache"
+
+  # Contracts
+  require "model_to_graphql/contracts/contracts"
+
+  # Types
+  require "model_to_graphql/types/model_type"
+  require "model_to_graphql/types/any_type"
+  require "model_to_graphql/types/date_type"
+  require "model_to_graphql/types/float"
+  require "model_to_graphql/types/paged_result_type"
+  require "model_to_graphql/types/raw_json"
+  require "model_to_graphql/types/union_model_type"
+
+  # Objects
+  require "model_to_graphql/objects/field"
+  require "model_to_graphql/objects/model"
+
+  # Field Place Holders
+  require "model_to_graphql/field_holders/base_resolver"
+  require "model_to_graphql/field_holders/query_key_resolver"
+  require "model_to_graphql/field_holders/query_resolver"
+  require "model_to_graphql/field_holders/single_resolver"
+
+  # Loaders
+  require "model_to_graphql/loaders/has_one_loader"
+  require "model_to_graphql/loaders/record_loader"
+
+  # GraphQL Class Generators
+  require "model_to_graphql/generators/type_generator"
+  require "model_to_graphql/generators/query_type_generator"
+  require "model_to_graphql/generators/model_query_generator"
+  require "model_to_graphql/generators/single_record_query_generator"
+  require "model_to_graphql/generators/sort_key_enum_generator"
+  require "model_to_graphql/generators/has_one_relation_resolver_generator"
+  require "model_to_graphql/generators/belongs_to_relation_resolver_generator"
+  require "model_to_graphql/generators/embeds_one_relation_resolver"
+  require "model_to_graphql/generators/embeds_many_relation_resolver"
+
+  require "model_to_graphql/relation_resolver"
+  require "model_to_graphql/return_type_instrumentor"
+
+  require "model_to_graphql/definitions/model_definition"
+  require "model_to_graphql/engine"
 
   class Error < StandardError; end
-  # Your code goes here...
 
   class << self
     def configure(&block)
@@ -22,7 +68,6 @@ module ModelToGraphql
     end
 
     # Define all the models should be excluded from the schema
-    Contract C::Args[String] => C::Any
     def exclude_models(*models_to_be_excluded)
       config(:excluded_models, models_to_be_excluded)
     end
@@ -95,24 +140,3 @@ module ModelToGraphql
     end
   end
 end
-
-if defined?(Mongoid) && defined?(Mongoid::Fields)
-  # Add additional mongoid field options
-  require_relative "mongoid_setup.rb"
-end
-
-require_relative "model_to_graphql/version"
-require_relative "graphql_setup.rb"
-require_relative "model_to_graphql/objects/field.rb"
-require_relative "model_to_graphql/objects/model.rb"
-require_relative "model_to_graphql/definitions/model_definition.rb"
-require_relative "model_to_graphql/generators/type_generator.rb"
-require_relative "model_to_graphql/generators/query_type_generator.rb"
-require_relative "model_to_graphql/generators/sort_key_enum_generator.rb"
-require_relative "model_to_graphql/generators/model_query_generator.rb"
-require_relative "model_to_graphql/engine.rb"
-require_relative "model_to_graphql/types/any_type.rb"
-require_relative "model_to_graphql/types/model_type.rb"
-require_relative "model_to_graphql/field_holders/query_resolver.rb"
-require_relative "model_to_graphql/field_holders/single_resolver.rb"
-require_relative "model_to_graphql/field_holders/query_key_resolver.rb"
