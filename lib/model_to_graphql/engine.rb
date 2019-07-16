@@ -49,7 +49,6 @@ module ModelToGraphql
     def bootstrap
       collect_model_names
       collect_model_definitions_names
-      puts "collections: #{collect_model_definitions_names}"
       @model_names.each do |model_name|
         model = model_name.constantize
 
