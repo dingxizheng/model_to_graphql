@@ -86,6 +86,7 @@ module ModelToGraphql
       def self.merged_fields
         model_fields = model.nil? ? [] : model.fields
         obj_fields = model_fields
+                      .select { |_, field| field.options[:type] != BSON::Binary }
                       .map    { |_, field| ModelToGraphql::Objects::Field.new(field) }
                       .select { |f| !@exclude_fields&.include?(f.name.to_s) }
 
