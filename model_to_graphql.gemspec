@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["dingxizheng"]
   spec.email         = ["dingxizheng@gmail.com"]
 
-  spec.summary       = "Convert model definitions into graphql queries and mutations"
-  spec.description   = "Convert model definitions into graphql queries and mutations"
+  spec.summary       = "Convert model definitions into graphql queries"
+  spec.description   = "Convert model definitions into graphql queries"
   spec.homepage      = "https://github.com/dingxizheng/model_to_graphql.git"
   spec.license       = "MIT"
 
