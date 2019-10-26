@@ -149,7 +149,7 @@ module ModelToGraphql
       end
 
       # Define a direct graphql field
-      Contract C::Or[String, Symbol], C::Maybe[Class], Hash, Proc => C::Any
+      Contract C::Or[String, Symbol], C::Any, Hash, Proc => C::Any
       def self.raw_field(name, type, **options, &block)
         self.raw_fields ||= []
         if block_given?
