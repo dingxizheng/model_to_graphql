@@ -108,6 +108,10 @@ require "model_to_graphql/types/union_model_type"
 # Objects
 require "model_to_graphql/objects/field"
 require "model_to_graphql/objects/model"
+require "model_to_graphql/objects/query_key"
+require "model_to_graphql/objects/query_type"
+require "model_to_graphql/objects/query_resolver"
+require "model_to_graphql/objects/record_resolver"
 
 # Field Place Holders
 require "model_to_graphql/field_holders/base_resolver"

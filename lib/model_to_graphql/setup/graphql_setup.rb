@@ -16,7 +16,8 @@ module ModelToGraphql
             model = model_name.constantize
             ModelToGraphql.logger.debug "ModelToGQL | Add top level fields for model: #{ model.name }"
 
-            field model_name(model_name).underscore.pluralize, resolver: ModelToGraphql::FieldHolders::QueryResolver[model] do
+            # ModelToGraphql::Objects::Resolver[model, type: :query]
+            field model_name(model_name).underscore.pluralize, resolver: ModelToGraphql::Objects::QueryResolver[model] do
               guard_proc = engine.config[:authorize_action]
               if !guard_proc.nil? && guard_proc.is_a?(Proc)
                 guard(-> (obj, args, ctx) {
@@ -25,7 +26,7 @@ module ModelToGraphql
               end
             end
 
-            field model_name(model_name).underscore.downcase,  resolver: ModelToGraphql::FieldHolders::SingleResolver[model] do
+            field model_name(model_name).underscore.downcase,  resolver: ModelToGraphql::Objects::RecordResolver[model] do
               guard_proc = engine.config[:authorize_action]
               if !guard_proc.nil? && guard_proc.is_a?(Proc)
                 guard(-> (obj, args, ctx) {
@@ -34,7 +35,7 @@ module ModelToGraphql
               end
             end
 
-            field "#{model_name(model_name).underscore.downcase}_query_keys", resolver: ModelToGraphql::FieldHolders::QueryKeyResolver[model]
+            field "#{model_name(model_name).underscore.downcase}_query_keys", resolver: ModelToGraphql::Objects::QueryKey[model]
           end
         end
 

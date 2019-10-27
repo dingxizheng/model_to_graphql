@@ -11,7 +11,7 @@ module ModelToGraphql
         self.class.relation
       end
 
-      def self.to_relation_resolver(relation, return_type)
+      def self.build(relation, return_type)
         Class.new(EmbedsOneRelationResolverGenerator) do
           type return_type, null: true
           for_relation relation

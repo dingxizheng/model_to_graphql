@@ -2,6 +2,8 @@
 
 module ModelToGraphql
   module Types
+    def self.const_missing(name)
+    end
     class ModelType < GraphQL::Schema::Object
       include ModelToGraphql::ObjectCache
 

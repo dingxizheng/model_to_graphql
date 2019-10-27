@@ -50,9 +50,6 @@ Layout/EmptyLinesAroundMethodBody:
 Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
-Layout/IndentFirstArgument:
-  Enabled: true
-
 # Use Ruby >= 1.9 syntax for hashes. Prefer { a: :b } over { :a => :b }.
 Style/HashSyntax:
   Enabled: true
@@ -153,9 +150,6 @@ Lint/UselessAccessModifier:
   Enabled: false
 
 Lint/UnusedMethodArgument:
-  Enabled: false
-
-Lint/DuplicateMethods:
   Enabled: false
 
 Style/RedundantReturn:
