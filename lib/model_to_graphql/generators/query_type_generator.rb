@@ -2,11 +2,6 @@
 
 module ModelToGraphql
   module Generators
-
-    unless defined?(GraphQL::Schema::InputObject)
-      raise "Graphql is not loaded!!!"
-    end
-
     class QueryTypeGenerator < GraphQL::Schema::InputObject
       include Contracts::Core
       C = Contracts

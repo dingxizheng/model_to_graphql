@@ -2,11 +2,6 @@
 
 module ModelToGraphql
   module Generators
-
-    unless defined?(GraphQL::Schema::Resolver)
-      raise "Graphql is not loaded!!!"
-    end
-
     class SingleRecordQueryGenerator < GraphQL::Schema::Resolver
 
       argument :id, ID, required: true

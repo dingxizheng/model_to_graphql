@@ -2,13 +2,7 @@
 
 module ModelToGraphql
   module Generators
-
-    unless defined?(GraphQL::Schema::Resolver)
-      raise "Graphql is not loaded!!!"
-    end
-
     class EmbedsOneRelationResolverGenerator < GraphQL::Schema::Resolver
-
       def resolve
         object.send(relation.name)
       end

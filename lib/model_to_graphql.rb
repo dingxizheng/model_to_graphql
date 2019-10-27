@@ -9,10 +9,6 @@ module ModelToGraphql
       instance_eval(&block)
     end
 
-    # Define which orm framework to be used.
-    # Mongoid is set as default
-    #
-    # @param orm [Symbol]
     def use_orm(orm = :mongoid)
       config(:orm, orm)
     end

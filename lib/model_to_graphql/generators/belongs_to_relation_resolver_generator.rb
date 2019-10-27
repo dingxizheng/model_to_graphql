@@ -2,10 +2,6 @@
 
 module ModelToGraphql
   module Generators
-    unless defined?(GraphQL::Schema::Resolver)
-      raise "Graphql is not loaded!!!"
-    end
-
     class BelongsToRelationResolverGenerator < GraphQL::Schema::Resolver
       class << self
         attr_accessor :is_relation_unscoped_proc, :relation

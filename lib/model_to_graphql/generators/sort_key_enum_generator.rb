@@ -2,11 +2,6 @@
 
 module ModelToGraphql
   module Generators
-
-    unless defined?(GraphQL::Schema::Enum)
-      raise "Graphql is not loaded!!!"
-    end
-
     class SortKeyEnumGenerator < GraphQL::Schema::Enum
       include Contracts::Core
       C = Contracts

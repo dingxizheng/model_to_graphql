@@ -2,10 +2,6 @@
 
 module ModelToGraphql
   module Generators
-    unless defined?(GraphQL::Schema::Resolver)
-      raise "Graphql is not loaded!!!"
-    end
-
     class ModelQueryGenerator < GraphQL::Schema::Resolver
       argument :page, Integer, required: false, default_value: 1,  prepare: -> (page, _ctx) {
         if page && page >= 99999999
