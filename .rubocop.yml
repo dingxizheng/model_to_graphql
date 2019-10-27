@@ -1,25 +1,11 @@
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.6
   # RuboCop has a bunch of cops enabled by default. This setting tells RuboCop
   # to ignore them, so only the ones explicitly set in this file are enabled.
   DisabledByDefault: true
   Exclude:
-    - '**/templates/**/*'
-    - '**/vendor/**/*'
-    - '**/vendor/**/.*'
-    - '**/node_modules/**/*'
-    - 'actionpack/lib/action_dispatch/journey/parser.rb'
     - 'bin/**/*'
-    - 'config.ru'
-    - 'config/initializers/**/*'
-    - 'config/boot.rb'
     - 'Rakefile'
-    - 'config/puma.rb'
-    - 'config/spring.rb'
-
-# Performance
-Performance:
-  Enabled: true
 
 # Security
 Security:
@@ -27,10 +13,6 @@ Security:
 
 Security/YAMLLoad:
   Enabled: false
-
-# Rails
-Rails:
-  Enabled: true
 
 # Prefer &&/|| over and/or.
 Style/AndOr:
@@ -54,7 +36,7 @@ Layout/ElseAlignment:
   Enabled: true
 
 Layout/EmptyLineAfterMagicComment:
-  Enabled: true
+  Enabled: false
 
 # In a regular class definition, no empty lines around the body.
 Layout/EmptyLinesAroundClassBody:
@@ -66,9 +48,9 @@ Layout/EmptyLinesAroundMethodBody:
 
 # In a regular module definition, no empty lines around the body.
 Layout/EmptyLinesAroundModuleBody:
-  Enabled: true
+  Enabled: false
 
-Layout/FirstParameterIndentation:
+Layout/IndentFirstArgument:
   Enabled: true
 
 # Use Ruby >= 1.9 syntax for hashes. Prefer { a: :b } over { :a => :b }.
@@ -79,7 +61,7 @@ Style/HashSyntax:
 # extra level of indentation.
 Layout/IndentationConsistency:
   Enabled: true
-  EnforcedStyle: rails
+  EnforcedStyle: indented_internal_methods
 
 # Two spaces, no tabs (for indentation).
 Layout/IndentationWidth:
@@ -138,7 +120,7 @@ Layout/SpaceInsideBlockBraces:
 
 # Use `{ a: 1 }` not `{a:1}`.
 Layout/SpaceInsideHashLiteralBraces:
-  Enabled: true
+  Enabled: false
 
 Layout/SpaceInsideParens:
   Enabled: true
@@ -154,7 +136,7 @@ Layout/Tab:
 
 # Blank lines should not have any spaces.
 Layout/TrailingBlankLines:
-  Enabled: true
+  Enabled: false
 
 # No trailing whitespace.
 Layout/TrailingWhitespace:
@@ -171,6 +153,9 @@ Lint/UselessAccessModifier:
   Enabled: false
 
 Lint/UnusedMethodArgument:
+  Enabled: false
+
+Lint/DuplicateMethods:
   Enabled: false
 
 Style/RedundantReturn:

@@ -43,9 +43,3 @@ class GraphQLResolver
     end
   end
 end
-
-class GraphQLResolverPromise
-  def self.valid?(val)
-    val&.is_a? Promise
-  end
-end

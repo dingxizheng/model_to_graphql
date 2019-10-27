@@ -1,57 +1,7 @@
 # frozen_string_literal: true
-require "promise"
 require "contracts"
 
 module ModelToGraphql
-
-  require "model_to_graphql/version"
-  require "model_to_graphql/setup/setup"
-
-  require "model_to_graphql/object_cache"
-
-  # Contracts
-  require "model_to_graphql/contracts/contracts"
-
-  # Types
-  require "model_to_graphql/types/model_type"
-  require "model_to_graphql/types/any_type"
-  require "model_to_graphql/types/date_type"
-  require "model_to_graphql/types/float"
-  require "model_to_graphql/types/paged_result_type"
-  require "model_to_graphql/types/raw_json"
-  require "model_to_graphql/types/union_model_type"
-
-  # Objects
-  require "model_to_graphql/objects/field"
-  require "model_to_graphql/objects/model"
-
-  # Field Place Holders
-  require "model_to_graphql/field_holders/base_resolver"
-  require "model_to_graphql/field_holders/query_key_resolver"
-  require "model_to_graphql/field_holders/query_resolver"
-  require "model_to_graphql/field_holders/single_resolver"
-
-  # Loaders
-  require "model_to_graphql/loaders/has_one_loader"
-  require "model_to_graphql/loaders/record_loader"
-
-  # GraphQL Class Generators
-  require "model_to_graphql/generators/type_generator"
-  require "model_to_graphql/generators/query_type_generator"
-  require "model_to_graphql/generators/model_query_generator"
-  require "model_to_graphql/generators/single_record_query_generator"
-  require "model_to_graphql/generators/sort_key_enum_generator"
-  require "model_to_graphql/generators/has_one_relation_resolver_generator"
-  require "model_to_graphql/generators/belongs_to_relation_resolver_generator"
-  require "model_to_graphql/generators/embeds_one_relation_resolver"
-  require "model_to_graphql/generators/embeds_many_relation_resolver"
-
-  require "model_to_graphql/relation_resolver"
-  require "model_to_graphql/return_type_instrumentor"
-
-  require "model_to_graphql/definitions/model_definition"
-  require "model_to_graphql/engine"
-
   class Error < StandardError; end
 
   class << self
@@ -140,3 +90,52 @@ module ModelToGraphql
     end
   end
 end
+
+
+require "model_to_graphql/version"
+require "model_to_graphql/setup/setup"
+
+require "model_to_graphql/object_cache"
+
+# Contracts
+require "model_to_graphql/contracts/contracts"
+
+# Types
+require "model_to_graphql/types/model_type"
+require "model_to_graphql/types/any_type"
+require "model_to_graphql/types/date_type"
+require "model_to_graphql/types/float"
+require "model_to_graphql/types/paged_result_type"
+require "model_to_graphql/types/raw_json"
+require "model_to_graphql/types/union_model_type"
+
+# Objects
+require "model_to_graphql/objects/field"
+require "model_to_graphql/objects/model"
+
+# Field Place Holders
+require "model_to_graphql/field_holders/base_resolver"
+require "model_to_graphql/field_holders/query_key_resolver"
+require "model_to_graphql/field_holders/query_resolver"
+require "model_to_graphql/field_holders/single_resolver"
+
+# Loaders
+require "model_to_graphql/loaders/has_one_loader"
+require "model_to_graphql/loaders/record_loader"
+
+# GraphQL Class Generators
+require "model_to_graphql/generators/type_generator"
+require "model_to_graphql/generators/query_type_generator"
+require "model_to_graphql/generators/model_query_generator"
+require "model_to_graphql/generators/single_record_query_generator"
+require "model_to_graphql/generators/sort_key_enum_generator"
+require "model_to_graphql/generators/has_one_relation_resolver_generator"
+require "model_to_graphql/generators/belongs_to_relation_resolver_generator"
+require "model_to_graphql/generators/embeds_one_relation_resolver"
+require "model_to_graphql/generators/embeds_many_relation_resolver"
+
+require "model_to_graphql/relation_resolver"
+require "model_to_graphql/return_type_instrumentor"
+
+require "model_to_graphql/definitions/model_definition"
+require "model_to_graphql/engine"

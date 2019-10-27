@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../object_cache.rb"
 module ModelToGraphql
   module Types
     class ModelType < GraphQL::Schema::Object

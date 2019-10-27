@@ -18,7 +18,7 @@ module ModelToGraphql
         editable:    C::Maybe[C::Bool],
         filterable:  C::Maybe[C::Bool],
         required:    C::Maybe[C::Bool],
-        resolver:    C::Maybe[C::Or[GraphQLResolver, GraphQLResolverPromise]],
+        resolver:    C::Maybe[C::Or[GraphQLResolver]],
         text:        C::Maybe[C::Bool],
         default:     C::Maybe[C::Any],
         # placeholder value should respond_to placeholder? and resolve_value
