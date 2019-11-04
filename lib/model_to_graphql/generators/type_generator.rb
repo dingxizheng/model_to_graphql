@@ -21,7 +21,7 @@ module ModelToGraphql
         [:symbol, String]
       ].freeze
 
-      def self.to_graphql_type(gl_name, fields, raw_fields = [], guard_proc = nil)
+      def self.build(gl_name, fields, raw_fields = [], guard_proc = nil)
         ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
         Class.new(TypeGenerator) do
           graphql_name gl_name

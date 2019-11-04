@@ -7,6 +7,46 @@ module ModelToGraphql
   class << self
     def configure(&block)
       instance_eval(&block)
+
+      Rails.application.config.after_initialize do |_app|
+        clear_constants
+        mount_queries
+
+        ActiveSupport::Reloader.after_class_unload do
+          clear_constants
+        end
+
+        ActiveSupport::Reloader.to_complete do
+          mount_queries
+        end
+      end
+    end
+
+    def clear_constants
+      const_namspaces = [
+        ModelToGraphql::Objects::BelongsToUnionType,
+        ModelToGraphql::Objects::Type,
+        ModelToGraphql::Objects::QueryType,
+        ModelToGraphql::Objects::QueryResolver,
+        ModelToGraphql::Objects::RecordResolver,
+        ModelToGraphql::Objects::QueryKey,
+        ModelToGraphql::Objects::SortKey,
+        ModelToGraphql::Objects::ModelDefinition
+      ]
+      const_namspaces.each { |ns| ns.remove_all_constants }
+    end
+
+    def mount_queries
+      query_type = query_type.constantize
+      query_type.mount_queries
+    end
+
+    def query_fields
+      @model_names = Mongoid.models.map(&:name).uniq
+      @model_names.reject do |model_name|
+        model = model_name.constantize
+        (config_options[:excluded_models] | []).include?(model_name) || model&.embedded?
+      end
     end
 
     def use_orm(orm = :mongoid)
@@ -64,6 +104,10 @@ module ModelToGraphql
       end
     end
 
+    def mount_queries_to(query_type)
+      config(:query_type, query_type.name)
+    end
+
     def config(key, val)
       @config ||= {}
       @config[key.to_sym] = val
@@ -91,8 +135,6 @@ end
 require "model_to_graphql/version"
 require "model_to_graphql/setup/setup"
 
-require "model_to_graphql/object_cache"
-
 # Contracts
 require "model_to_graphql/contracts/contracts"
 
@@ -103,21 +145,18 @@ require "model_to_graphql/types/date_type"
 require "model_to_graphql/types/float"
 require "model_to_graphql/types/paged_result_type"
 require "model_to_graphql/types/raw_json"
-require "model_to_graphql/types/union_model_type"
 
 # Objects
+require "model_to_graphql/objects/model_definition"
+require "model_to_graphql/objects/helper"
 require "model_to_graphql/objects/field"
-require "model_to_graphql/objects/model"
+require "model_to_graphql/objects/type"
 require "model_to_graphql/objects/query_key"
+require "model_to_graphql/objects/sort_key"
 require "model_to_graphql/objects/query_type"
 require "model_to_graphql/objects/query_resolver"
 require "model_to_graphql/objects/record_resolver"
-
-# Field Place Holders
-require "model_to_graphql/field_holders/base_resolver"
-require "model_to_graphql/field_holders/query_key_resolver"
-require "model_to_graphql/field_holders/query_resolver"
-require "model_to_graphql/field_holders/single_resolver"
+require "model_to_graphql/objects/belongs_to_union_type"
 
 # Loaders
 require "model_to_graphql/loaders/has_one_loader"
@@ -135,7 +174,4 @@ require "model_to_graphql/generators/embeds_one_relation_resolver"
 require "model_to_graphql/generators/embeds_many_relation_resolver"
 
 require "model_to_graphql/relation_resolver"
-require "model_to_graphql/return_type_instrumentor"
-
 require "model_to_graphql/definitions/model_definition"
-require "model_to_graphql/engine"

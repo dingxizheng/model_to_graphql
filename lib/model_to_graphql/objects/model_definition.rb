@@ -1,8 +1,7 @@
 # frozen_string_literal: true
-
 module ModelToGraphql
   module Objects
-    module RecordResolver
+    module ModelDefinition
       def self.[](model)
         case model
         when String, Symbol
@@ -13,8 +12,7 @@ module ModelToGraphql
       end
 
       def self.const_missing(name)
-        record_resolver = ModelToGraphql::Objects::Helper.make_record_resolver(denormalize(name))
-        self.const_set(name, record_resolver)
+        self.const_set(name, ModelToGraphql::Objects::Helper.make_model_definition(denormalize(name)))
       end
 
       def self.remove_all_constants

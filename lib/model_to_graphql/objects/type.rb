@@ -2,7 +2,7 @@
 
 module ModelToGraphql
   module Objects
-    module RecordResolver
+    module Type
       def self.[](model)
         case model
         when String, Symbol
@@ -13,13 +13,13 @@ module ModelToGraphql
       end
 
       def self.const_missing(name)
-        record_resolver = ModelToGraphql::Objects::Helper.make_record_resolver(denormalize(name))
-        self.const_set(name, record_resolver)
+        return_type = ModelToGraphql::Objects::Helper.make_return_type(denormalize(name))
+        self.const_set(name, return_type)
       end
 
       def self.remove_all_constants
         self.constants.each do |c|
-          self.send(:remove_const, c)
+          ModelToGraphql::Objects::Type.send(:remove_const, c)
         end
       end
 

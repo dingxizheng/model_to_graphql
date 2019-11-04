@@ -6,7 +6,7 @@ module ModelToGraphql
 
       argument :id, ID, required: true
 
-      def resolve(id: nil)
+      def resolve(path: [], lookahead: nil, id: nil)
         ModelToGraphql::Loaders::RecordLoader.for(klass).load(id)
       end
 
@@ -14,7 +14,7 @@ module ModelToGraphql
         self.class.klass
       end
 
-      def self.to_query_resolver(klass, return_type)
+      def self.build(klass, return_type)
         Class.new(SingleRecordQueryGenerator) do
           type return_type, null: true
           for_class klass

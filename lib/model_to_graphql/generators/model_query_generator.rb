@@ -19,8 +19,8 @@ module ModelToGraphql
       }
 
       # @params filter [Hash]
-      def resolve(filter: {}, **args)
-        scope = default_scope
+      def resolve(path: [], lookahead: nil, filter: {}, **args)
+        scope = default_scope(path.last)
         filter.each do |arg, value|
           arg_handler = self.class.query_handlers[arg.to_s]
           if !arg_handler.nil?
@@ -49,15 +49,19 @@ module ModelToGraphql
         end
       end
 
-      def default_scope
+      def default_scope(relation_name)
         authorized_scope = self.class.resolve_authorized_scope(context, self.class.model_class)
-        if !object.nil? && self.class.current_relation
+        if !object.nil? && relation_name && has_relation(object, relation_name)
           base_selector     = authorized_scope.selector
-          relation_selector = object.send(self.class.current_relation.name).selector
+          relation_selector = object.send(relation_name).selector
           self.class.model_class.where(base_selector).and(relation_selector)
         else
           authorized_scope
         end
+      end
+
+      def has_relation(object, path)
+        !object.class.relations[path.to_s].nil?
       end
 
       # Generate graphql field resolver class
@@ -66,7 +70,7 @@ module ModelToGraphql
       # @param query_type The filter type
       # @param sort_key_enum Suppotted sort keys
       # @param scope_resolver_proc The proc which called to resolve the default scope based on the context.
-      def self.to_query_resolver(model, return_type, query_type, sort_key_enum, scope_resolver_proc = nil)
+      def self.build(model, return_type, query_type, sort_key_enum, scope_resolver_proc = nil)
         Class.new(ModelQueryGenerator) do
           scope_resolver scope_resolver_proc
           to_resolve model, query_type
@@ -87,14 +91,6 @@ module ModelToGraphql
 
       def self.query_handlers
         @handlers || {}
-      end
-
-      def self.set_relation(relation)
-        @relation = relation
-      end
-
-      def self.current_relation
-        @relation
       end
 
       def self.scope_resolver(resolver_proc = nil)

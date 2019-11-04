@@ -2,7 +2,7 @@
 
 module ModelToGraphql
   module Objects
-    module RecordResolver
+    module SortKey
       def self.[](model)
         case model
         when String, Symbol
@@ -13,8 +13,8 @@ module ModelToGraphql
       end
 
       def self.const_missing(name)
-        record_resolver = ModelToGraphql::Objects::Helper.make_record_resolver(denormalize(name))
-        self.const_set(name, record_resolver)
+        sort_key_enum = ModelToGraphql::Objects::Helper.make_sort_key_enum(denormalize(name))
+        self.const_set(name, sort_key_enum)
       end
 
       def self.remove_all_constants

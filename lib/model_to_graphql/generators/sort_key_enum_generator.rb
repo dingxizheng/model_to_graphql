@@ -7,7 +7,7 @@ module ModelToGraphql
       C = Contracts
 
       Contract String, C::ArrayOf[ModelToGraphql::Objects::Field] => C::Any
-      def self.to_graphql_enum(name, fields)
+      def self.build(name, fields)
         Class.new(SortKeyEnumGenerator) do
           graphql_name name
           define_enums fields

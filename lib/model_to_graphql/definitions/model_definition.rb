@@ -84,6 +84,7 @@ module ModelToGraphql
 
       # Merge local defined fields with model fields
       def self.merged_fields
+        return @merged_fields unless @merged_fields.nil?
         model_fields = model.nil? ? [] : model.fields
         obj_fields = model_fields
                       .select { |_, field| field.options[:type] != BSON::Binary }
@@ -122,22 +123,22 @@ module ModelToGraphql
         end
 
         # return all fields
-        obj_fields
+        @merged_fields = obj_fields
       end
 
-      def self.discover_links(context)
+      def self.discover_links
         return [] if model.nil?
-        discover_links_of :belongs_to,  context: context
-        discover_links_of :has_one,     context: context
-        discover_links_of :has_many,    context: context
-        discover_links_of :has_and_belongs_to_many,    context: context
-        discover_links_of :embeds_one,  context: context
-        discover_links_of :embeds_many, context: context
+        discover_links_of :belongs_to
+        discover_links_of :has_one
+        discover_links_of :has_many
+        discover_links_of :has_and_belongs_to_many
+        discover_links_of :embeds_one
+        discover_links_of :embeds_many
       end
 
-      def self.discover_links_of(link_type, context:)
+      def self.discover_links_of(link_type)
         model.reflect_on_all_associations(link_type).each do |relation|
-          field relation.name, resolver: context.relation_resolver(relation)
+          field relation.name, resolver: RelationResolver.of(relation).resolve
         end
       end
 

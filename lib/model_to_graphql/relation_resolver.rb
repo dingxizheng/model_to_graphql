@@ -3,43 +3,43 @@
 module ModelToGraphql
   class RelationResolver
     include ModelToGraphql::Generators
-    include ModelToGraphql::Types
 
-    attr_accessor :relation, :context
+    attr_accessor :relation
 
-    def self.of(relation, context)
+    def self.of(relation, context = nil)
       promise = new
       promise.relation = relation
-      promise.context  = context
       promise
     end
 
     def resolve
       case relation
       when Mongoid::Association::Referenced::BelongsTo
-        BelongsToRelationResolverGenerator.build(relation, resolve_belongs_to_type, context.config[:is_relation_unscoped])
+        BelongsToRelationResolverGenerator.build(relation, resolve_belongs_to_type, ModelToGraphql.config_options[:is_relation_unscoped])
       when Mongoid::Association::Embedded::EmbedsOne
         EmbedsOneRelationResolverGenerator.build(relation, get_model_type(relation.klass))
       when Mongoid::Association::Embedded::EmbedsMany
         EmbedsManyRelationResolverGenerator.build(relation, get_model_type(relation.klass))
       when Mongoid::Association::Referenced::HasOne
-        HasOneRelationResolverGenerator.build(relation, get_model_type(relation.klass), context.config[:is_relation_unscoped])
+        HasOneRelationResolverGenerator.build(relation, get_model_type(relation.klass),  ModelToGraphql.config_options[:is_relation_unscoped])
       when Mongoid::Association::Referenced::HasMany
-        ModelToGraphql::FieldHolders::QueryResolver[relation.klass, "#{relation.inverse_class}#{relation.name}", relation: relation]
+        ModelToGraphql::Objects::QueryResolver[relation.klass]
+        # ModelToGraphql::FieldHolders::QueryResolver[relation.klass, "#{relation.inverse_class}#{relation.name}", relation: relation]
       when Mongoid::Association::Referenced::HasAndBelongsToMany
-        ModelToGraphql::FieldHolders::QueryResolver[relation.klass, "#{relation.inverse_class}#{relation.name}", relation: relation]
+        ModelToGraphql::Objects::QueryResolver[relation.klass]
+        # ModelToGraphql::FieldHolders::QueryResolver[relation.klass, "#{relation.inverse_class}#{relation.name}", relation: relation]
       else
         puts "#{relation.class} is not supported!!"
       end
     end
 
     def get_model_type(model)
-      ModelType[model]
+      ModelToGraphql::Objects::Type[model]
     end
 
     def resolve_belongs_to_type
       if relation.polymorphic?
-        UnionModelType[relation, context]
+        ModelToGraphql::Objects::BelongsToUnionType[relation]
       else
         get_model_type(relation.klass)
       end
