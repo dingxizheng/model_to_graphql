@@ -78,7 +78,7 @@ module ModelToGraphql
                 ModelToGraphql::EventBus.on_ready(f.resolver.klass.name) do
                   ModelToGraphql.logger.debug "ModelToGQL | add resolver on relation[#{f.resolver.name}] for model[#{f.resolver.klass.name}]"
                   resolver = RelationResolver.of(f.resolver).resolve
-                  field f.name, resolver: resolver
+                  field f.name, extras: [:path, :lookahead], resolver: resolver
                 rescue => e
                   ModelToGraphql.logger.error "ModelToGQL | failed to add resolver on relation[#{f.resolver.name}] for model[#{f.resolver.klass.name}]"
                   ModelToGraphql.logger.error "ModelToGQL | #{resolver.inspect}, error: #{e.message}"
@@ -91,7 +91,7 @@ module ModelToGraphql
                 ModelToGraphql::EventBus.on_ready(*model_names) do
                   ModelToGraphql.logger.debug "ModelToGQL | add resolver on polymorphic relation[#{f.resolver.name}] for model[#{model_names}]"
                   resolver = RelationResolver.of(f.resolver).resolve
-                  field f.name, resolver: resolver
+                  field f.name, extras: [:path, :lookahead], resolver: resolver
                 rescue => e
                   ModelToGraphql.logger.error "ModelToGQL | failed to add resolver on polymorphic relation[#{f.resolver.name}] for model[#{model_names}]"
                   ModelToGraphql.logger.error "ModelToGQL | #{resolver.inspect}, error: #{e.message}"
