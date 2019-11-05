@@ -20,7 +20,7 @@ module ModelToGraphql
 
       # @params filter [Hash]
       def resolve(path: [], lookahead: nil, filter: {}, **args)
-        scope = default_scope(path.last)
+        scope = default_scope(path&.last&.underscore)
         filter.each do |arg, value|
           arg_handler = self.class.query_handlers[arg.to_s]
           if !arg_handler.nil?
