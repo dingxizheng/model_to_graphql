@@ -25,6 +25,7 @@ module ModelToGraphql
                     graphql_name    const_name
                     field           :name, String, null: true # Only used for defining the schema
                   end
+
           self.const_set(const_name, klass)
         end
 

@@ -10,16 +10,16 @@ module ModelToGraphql
 
       Rails.application.config.after_initialize do |_app|
         ModelToGraphql.mount_queries
-        ModelToGraphql.mount_field_instrumentor
+        ModelToGraphql::EventBus.fulfill_unfired_requests
 
         ActiveSupport::Reloader.after_class_unload do
           ModelToGraphql::EventBus.clear
           ModelToGraphql.clear_constants
         end
 
-        ActiveSupport::Reloader.to_complete do
+        ActiveSupport::Reloader.to_prepare do
           ModelToGraphql.mount_queries
-          ModelToGraphql.mount_field_instrumentor
+          ModelToGraphql::EventBus.fulfill_unfired_requests
         end
       end
     end
@@ -48,13 +48,8 @@ module ModelToGraphql
       query_type.mount_queries
     end
 
-    def mount_field_instrumentor
-      schema = config_options[:schema].constantize
-      schema.instrument(:field, ModelToGraphql::ReturnTypeInstrumentor.new)
-    end
-
     def query_fields
-      @model_names = Mongoid.models.map(&:name).uniq
+      @model_names ||= Mongoid.models.map(&:name).uniq
       @model_names.reject do |model_name|
         model = model_name.constantize
         (config_options[:excluded_models] | []).include?(model_name) || model&.embedded?
@@ -154,7 +149,6 @@ require "model_to_graphql/setup/setup"
 # Contracts
 require "model_to_graphql/contracts/contracts"
 
-require "model_to_graphql/return_type_instrumentor"
 require "model_to_graphql/event_bus"
 
 # Types

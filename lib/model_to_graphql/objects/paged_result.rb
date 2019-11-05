@@ -16,7 +16,15 @@ module ModelToGraphql
 
             field :total, Integer, null: false
             field :page,  Integer, null: false
-            field :list,  [return_type], null: true
+
+            if return_type.is_a?(Class) && return_type < ModelToGraphql::Types::ModelType
+              actual_class_name = return_type.model_class.name
+              ModelToGraphql::EventBus.on_ready(actual_class_name) do
+                field(:list, [ModelToGraphql::Objects::Type[actual_class_name]], null: true)
+              end
+            else
+              field(:list,  [return_type], null: true)
+            end
 
             def total
               object&.list&.count

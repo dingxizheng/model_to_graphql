@@ -41,6 +41,18 @@ module ModelToGraphql
           false
         end
       end
+
+      def fulfill_unfired_requests
+        @subscribers ||= {}
+        @subscribers.keys.each do |key|
+          data = @subscribers[key]
+          if !data[:fired]
+            data[:models].each do |name|
+              ModelToGraphql::Objects::Type[name]
+            end
+          end
+        end
+      end
     end
   end
 end

@@ -25,7 +25,7 @@ module ModelToGraphql
         ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
         klass = Class.new(TypeGenerator) do
           graphql_name(gl_name)
-          define_fields(fields)
+          define_fields(fields, raw_fields)
           define_raw_fields(raw_fields)
 
           @guard_proc = guard_proc
@@ -56,7 +56,16 @@ module ModelToGraphql
 
       def self.define_raw_fields(raw_fields = [])
         raw_fields.each do |raw_field|
-          field raw_field[:name], raw_field[:type], **raw_field[:options]
+          field_return_type = raw_field[:type]
+          if field_return_type.is_a?(Class) && field_return_type < ModelToGraphql::Types::ModelType
+            actual_class_name = field_return_type.model_class.name
+            ModelToGraphql::EventBus.on_ready(actual_class_name) do
+              field(raw_field[:name], ModelToGraphql::Objects::Type[actual_class_name], **raw_field[:options])
+            end
+          else
+            field(raw_field[:name], field_return_type, **raw_field[:options])
+          end
+          # Define resolver method for the field
           if !raw_field[:block].nil?
             define_method(raw_field[:name]) do
               raw_field[:block].call(object, context)
@@ -65,9 +74,10 @@ module ModelToGraphql
         end
       end
 
-      Contract C::ArrayOf[ModelToGraphql::Objects::Field] => C::Any
-      def self.define_fields(fields)
-        fields.each do |f|
+      def self.define_fields(fields, raw_fields = [])
+        fields.reject do |field|
+          raw_fields.any? { |raw_field| raw_field[:name].to_s == field.name.to_s }
+        end.each do |f|
           # If it's a id field
           if f.name == :id
             field :id, ID, null: false
