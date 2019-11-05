@@ -5,27 +5,19 @@ FIELD = ModelToGraphql::Objects::Field
 module ModelToGraphql
   module Definitions
     class ModelDefinition
-      include Contracts::Core
-      C = Contracts
-
-      @@descendant_classes = []
-      @@descendant_classes_map = {}
 
       class << self
         attr_accessor :filters, :raw_fields
       end
 
-      Contract nil => C::ArrayOf[Class]
       def self.definitions
         ModelToGraphql::Definitions::ModelDefinition.descendants
       end
 
-      Contract MongoidModel => C::Any
       def self.define_for_model(model_class)
         @model_class = model_class.name
       end
 
-      Contract nil => C::Maybe[MongoidModel]
       def self.model
         @model_class.constantize
       end
@@ -34,38 +26,31 @@ module ModelToGraphql
         @model_class
       end
 
-      Contract C::Args[C::Or[String, Symbol]] => C::ArrayOf[String]
       def self.exclude_fields(*fields)
         @exclude_fields = fields.map(&:to_s)
       end
 
-      Contract C::Args[C::Or[String, Symbol]] => C::ArrayOf[String]
       def self.disable_sort_on(*fields)
         @unsortable_fields = fields.map(&:to_s)
       end
 
-      Contract C::Args[C::Or[String, Symbol]] => C::ArrayOf[String]
       def self.disable_filter_on(*fields)
         @unfilterable_fields = fields.map(&:to_s)
       end
 
-      Contract C::Args[C::Or[String, Symbol]] => C::ArrayOf[String]
       def self.disable_edit_on(*fields)
         @uneditable_fields = fields.map(&:to_s)
       end
 
-      Contract C::Args[C::Or[String, Symbol]] => C::ArrayOf[String]
       def self.disable_link_on(*relations)
         @disabled_links = relations.map(&:to_s)
       end
 
-      Contract C::Or[String, Symbol], FIELD::FIELD_OPTION_TYPE, C::Func => C::Any
       def self.field(field_name, **options)
         @defined_fields ||= {}
         @defined_fields[field_name.to_s] = Hash[name: field_name, **options]
       end
 
-      Contract C::Or[String, Symbol], FIELD::FIELD_OPTION_TYPE => C::Any
       def self.field_attribute(field_name, **options)
         # model.fields[field_name.to_s].options.merge!(options)
         @defined_field || {}
@@ -134,15 +119,11 @@ module ModelToGraphql
         end
       end
 
-      # Define a custom filter
-      Contract C::Or[String, Symbol], C::Or[C::ArrayOf[C::Any], Class], { handler: Proc } => C::Any
       def self.filter(name, input_type, handler: nil)
         self.filters ||= []
         self.filters << { name: name.to_sym, input_type: input_type, handler: handler }
       end
 
-      # Define a direct graphql field
-      Contract C::Or[String, Symbol], C::Any, Hash, Proc => C::Any
       def self.raw_field(name, type, **options, &block)
         self.raw_fields ||= []
         if block_given?

@@ -73,7 +73,7 @@ module ModelToGraphql
       def self.build(model, return_type, query_type, sort_key_enum, scope_resolver_proc = nil)
         ModelToGraphql.logger.debug "ModelToGQL | Generating model query resolver #{model.name} ..."
         klass = Class.new(ModelQueryGenerator) do
-          type           ModelToGraphql::Types::PagedResultType[return_type], null: false
+          type           ModelToGraphql::Objects::PagedResult[return_type], null: false
           scope_resolver scope_resolver_proc
           to_resolve     model, query_type
           argument       :sort, sort_key_enum, required: false

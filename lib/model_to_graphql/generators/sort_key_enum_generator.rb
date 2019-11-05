@@ -3,10 +3,7 @@
 module ModelToGraphql
   module Generators
     class SortKeyEnumGenerator < GraphQL::Schema::Enum
-      include Contracts::Core
-      C = Contracts
 
-      Contract String, C::ArrayOf[ModelToGraphql::Objects::Field] => C::Any
       def self.build(gl_name, fields)
         ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
         klass = Class.new(SortKeyEnumGenerator) do
@@ -19,7 +16,6 @@ module ModelToGraphql
         klass
       end
 
-      Contract C::ArrayOf[ModelToGraphql::Objects::Field] => C::Any
       def self.define_enums(fields)
         fields.select { |f| f.sortable }
               .each(&method(:make_enum))

@@ -10,14 +10,16 @@ module ModelToGraphql
 
       Rails.application.config.after_initialize do |_app|
         ModelToGraphql.mount_queries
+        ModelToGraphql.mount_field_instrumentor
 
         ActiveSupport::Reloader.after_class_unload do
-          ModelToGraphql.clear_constants
           ModelToGraphql::EventBus.clear
+          ModelToGraphql.clear_constants
         end
 
         ActiveSupport::Reloader.to_complete do
           ModelToGraphql.mount_queries
+          ModelToGraphql.mount_field_instrumentor
         end
       end
     end
@@ -32,14 +34,23 @@ module ModelToGraphql
         ModelToGraphql::Objects::QueryKey,
         ModelToGraphql::Objects::SortKey,
         ModelToGraphql::Objects::ModelDefinition,
-        ModelToGraphql::Objects::PagedResult
+        ModelToGraphql::Objects::PagedResult,
+        ModelToGraphql::Types::ModelType
       ]
-      const_namspaces.each { |ns| ns.remove_all_constants }
+      const_namspaces.each do |namespace|
+        ModelToGraphql.logger.debug "ModelToGQL | clear constants for #{namespace}..."
+        namespace.remove_all_constants if namespace.respond_to?(:remove_all_constants)
+      end
     end
 
     def mount_queries
       query_type = config_options[:query_type].constantize
       query_type.mount_queries
+    end
+
+    def mount_field_instrumentor
+      schema = config_options[:schema].constantize
+      schema.instrument(:field, ModelToGraphql::ReturnTypeInstrumentor.new)
     end
 
     def query_fields
@@ -109,6 +120,10 @@ module ModelToGraphql
       config(:query_type, query_type.name)
     end
 
+    def define_for_schema(schema)
+      config(:schema, schema.name)
+    end
+
     def config(key, val)
       @config ||= {}
       @config[key.to_sym] = val
@@ -139,6 +154,7 @@ require "model_to_graphql/setup/setup"
 # Contracts
 require "model_to_graphql/contracts/contracts"
 
+require "model_to_graphql/return_type_instrumentor"
 require "model_to_graphql/event_bus"
 
 # Types

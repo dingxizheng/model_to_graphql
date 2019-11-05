@@ -24,9 +24,9 @@ module ModelToGraphql
       def self.build(gl_name, fields, raw_fields = [], guard_proc = nil)
         ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
         klass = Class.new(TypeGenerator) do
-          graphql_name gl_name
-          define_fields fields
-          define_raw_fields raw_fields
+          graphql_name(gl_name)
+          define_fields(fields)
+          define_raw_fields(raw_fields)
 
           @guard_proc = guard_proc
           def self.authorized?(object, context)
@@ -42,6 +42,7 @@ module ModelToGraphql
             @gl_name
           end
         end
+
         klass
       end
 
