@@ -13,16 +13,28 @@ module ModelToGraphql
       end
 
       def self.const_missing(name)
-        query_key_enum        = ModelToGraphql::Objects::Helper.make_query_key_enum(denormalize(name))
-        actual_return_type    = GraphQL::Schema::List.new(GraphQL::Schema::NonNull.new(query_key_enum))
+        return self.const_get(name) if self.self_const_defined?(name)
+        query_key_enum = ModelToGraphql::Objects::Helper.make_query_key_enum(denormalize(name))
+        # actual_return_type    = GraphQL::Schema::List.new(GraphQL::Schema::NonNull.new(query_key_enum))
+
         actual_resolver_class = Class.new(GraphQL::Schema::Resolver) do
+          type [query_key_enum], null: false
           @@query_key_type = query_key_enum
-          type(actual_return_type, null: false)
+          # type(actual_return_type, null: false)
           def resolve
             @@query_key_type.map { |f| f.values.keys }
           end
         end
         self.const_set(name, actual_resolver_class)
+      end
+
+      def self.self_const_defined?(name)
+        if self.const_defined?(name)
+          c = self.const_get(name)
+          c.name.start_with?(self.name)
+        else
+          false
+        end
       end
 
       def self.remove_all_constants

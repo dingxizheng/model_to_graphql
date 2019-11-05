@@ -23,7 +23,7 @@ module ModelToGraphql
 
       def self.build(gl_name, fields, raw_fields = [], guard_proc = nil)
         ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
-        Class.new(TypeGenerator) do
+        klass = Class.new(TypeGenerator) do
           graphql_name gl_name
           define_fields fields
           define_raw_fields raw_fields
@@ -42,6 +42,7 @@ module ModelToGraphql
             @gl_name
           end
         end
+        klass
       end
 
       def self.name
@@ -71,7 +72,33 @@ module ModelToGraphql
             field :id, ID, null: false
           # If resolver is provided
           elsif f.resolver.present?
-            field f.name, resolver: f.resolver
+            if f.resolver.is_a? Mongoid::Association::Relatable
+              if !f.resolver.klass.nil?
+                ModelToGraphql::EventBus.on_ready(f.resolver.klass.name) do
+                  ModelToGraphql.logger.debug "ModelToGQL | add resolver on relation[#{f.resolver.name}] for model[#{f.resolver.klass.name}]"
+                  resolver = RelationResolver.of(f.resolver).resolve
+                  field f.name, resolver: resolver
+                rescue => e
+                  ModelToGraphql.logger.error "ModelToGQL | failed to add resolver on relation[#{f.resolver.name}] for model[#{f.resolver.klass.name}]"
+                  ModelToGraphql.logger.error "ModelToGQL | #{resolver.inspect}, error: #{e.message}"
+                end
+              elsif f.resolver.polymorphic?
+                relation_name = f.resolver.name
+                model_names = Mongoid.models.select do |m|
+                                m.relations.any? { |_, field| field.options[:as] == relation_name }
+                              end.map(&:name)
+                ModelToGraphql::EventBus.on_ready(*model_names) do
+                  ModelToGraphql.logger.debug "ModelToGQL | add resolver on polymorphic relation[#{f.resolver.name}] for model[#{model_names}]"
+                  resolver = RelationResolver.of(f.resolver).resolve
+                  field f.name, resolver: resolver
+                rescue => e
+                  ModelToGraphql.logger.error "ModelToGQL | failed to add resolver on polymorphic relation[#{f.resolver.name}] for model[#{model_names}]"
+                  ModelToGraphql.logger.error "ModelToGQL | #{resolver.inspect}, error: #{e.message}"
+                end
+              end
+            else
+              field f.name, resolver: f.resolver
+            end
           else
             field f.name, graphql_prime_type(f.type, f.element), null: f.null?
           end

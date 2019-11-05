@@ -7,9 +7,9 @@ module ModelToGraphql
     attr_accessor :relation
 
     def self.of(relation, context = nil)
-      promise = new
-      promise.relation = relation
-      promise
+      instance = new
+      instance.relation = relation
+      instance
     end
 
     def resolve

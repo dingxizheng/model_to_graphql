@@ -9,15 +9,15 @@ module ModelToGraphql
       instance_eval(&block)
 
       Rails.application.config.after_initialize do |_app|
-        clear_constants
-        mount_queries
+        ModelToGraphql.mount_queries
 
         ActiveSupport::Reloader.after_class_unload do
-          clear_constants
+          ModelToGraphql.clear_constants
+          ModelToGraphql::EventBus.clear
         end
 
         ActiveSupport::Reloader.to_complete do
-          mount_queries
+          ModelToGraphql.mount_queries
         end
       end
     end
@@ -31,13 +31,14 @@ module ModelToGraphql
         ModelToGraphql::Objects::RecordResolver,
         ModelToGraphql::Objects::QueryKey,
         ModelToGraphql::Objects::SortKey,
-        ModelToGraphql::Objects::ModelDefinition
+        ModelToGraphql::Objects::ModelDefinition,
+        ModelToGraphql::Objects::PagedResult
       ]
       const_namspaces.each { |ns| ns.remove_all_constants }
     end
 
     def mount_queries
-      query_type = query_type.constantize
+      query_type = config_options[:query_type].constantize
       query_type.mount_queries
     end
 
@@ -138,6 +139,8 @@ require "model_to_graphql/setup/setup"
 # Contracts
 require "model_to_graphql/contracts/contracts"
 
+require "model_to_graphql/event_bus"
+
 # Types
 require "model_to_graphql/types/model_type"
 require "model_to_graphql/types/any_type"
@@ -157,6 +160,7 @@ require "model_to_graphql/objects/query_type"
 require "model_to_graphql/objects/query_resolver"
 require "model_to_graphql/objects/record_resolver"
 require "model_to_graphql/objects/belongs_to_union_type"
+require "model_to_graphql/objects/paged_result"
 
 # Loaders
 require "model_to_graphql/loaders/has_one_loader"

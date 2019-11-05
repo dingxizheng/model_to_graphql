@@ -39,7 +39,7 @@ class GraphQLResolver
     if val&.is_a? Class
       val < GraphQL::Schema::Resolver
     else
-      false
+      val.is_a?(Mongoid::Association::Relatable) ? true : false
     end
   end
 end

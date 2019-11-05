@@ -13,20 +13,11 @@ module ModelToGraphql
 
       class << self
         attr_accessor :filters, :raw_fields
-        # def inherited(child_class)
-        #   @@descendant_classes ||= []
-        #   @@descendant_classes << child_class
-        # end
-
-        # def clear_descendants
-        #   @@descendant_classes = []
-        #   @@descendant_classes_map = {}
-        # end
       end
 
       Contract nil => C::ArrayOf[Class]
       def self.definitions
-        ModelDefinition.descendants
+        ModelToGraphql::Definitions::ModelDefinition.descendants
       end
 
       Contract MongoidModel => C::Any
@@ -138,7 +129,8 @@ module ModelToGraphql
 
       def self.discover_links_of(link_type)
         model.reflect_on_all_associations(link_type).each do |relation|
-          field relation.name, resolver: RelationResolver.of(relation).resolve
+          # field relation.name, resolver: RelationResolver.of(relation).resolve
+          field relation.name, resolver: relation
         end
       end
 

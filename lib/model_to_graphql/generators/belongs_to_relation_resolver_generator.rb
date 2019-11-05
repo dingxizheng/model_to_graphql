@@ -37,11 +37,12 @@ module ModelToGraphql
       end
 
       def self.build(relation, return_type, is_relation_unscoped_proc = nil)
-        Class.new(BelongsToRelationResolverGenerator) do
+        klass = Class.new(BelongsToRelationResolverGenerator) do
           type return_type, null: true
           self.is_relation_unscoped_proc = is_relation_unscoped_proc
           self.relation = relation
         end
+        klass
       end
     end
   end

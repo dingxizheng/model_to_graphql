@@ -13,10 +13,12 @@ module ModelToGraphql
       end
 
       def self.build(relation, return_type)
-        Class.new(EmbedsManyRelationResolverGenerator) do
+        klass = Class.new(EmbedsManyRelationResolverGenerator) do
           type [return_type], null: true
           for_relation relation
         end
+
+        klass
       end
 
       def self.for_relation(relation)

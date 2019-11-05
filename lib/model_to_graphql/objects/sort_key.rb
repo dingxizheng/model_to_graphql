@@ -13,8 +13,18 @@ module ModelToGraphql
       end
 
       def self.const_missing(name)
-        sort_key_enum = ModelToGraphql::Objects::Helper.make_sort_key_enum(denormalize(name))
-        self.const_set(name, sort_key_enum)
+        return self.const_get(name) if self.self_const_defined?(name)
+        cnst = ModelToGraphql::Objects::Helper.make_sort_key_enum(denormalize(name))
+        self.const_set(name, cnst)
+      end
+
+      def self.self_const_defined?(name)
+        if self.const_defined?(name)
+          c = self.const_get(name)
+          c.name.start_with?(self.name)
+        else
+          false
+        end
       end
 
       def self.remove_all_constants

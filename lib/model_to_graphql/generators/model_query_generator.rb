@@ -71,12 +71,14 @@ module ModelToGraphql
       # @param sort_key_enum Suppotted sort keys
       # @param scope_resolver_proc The proc which called to resolve the default scope based on the context.
       def self.build(model, return_type, query_type, sort_key_enum, scope_resolver_proc = nil)
-        Class.new(ModelQueryGenerator) do
+        ModelToGraphql.logger.debug "ModelToGQL | Generating model query resolver #{model.name} ..."
+        klass = Class.new(ModelQueryGenerator) do
+          type           ModelToGraphql::Types::PagedResultType[return_type], null: false
           scope_resolver scope_resolver_proc
-          to_resolve model, query_type
-          type ModelToGraphql::Types::PagedResultType[return_type], null: false
-          argument :sort, sort_key_enum, required: false
+          to_resolve     model, query_type
+          argument       :sort, sort_key_enum, required: false
         end
+        klass
       end
 
       def self.to_resolve(model, query_type)

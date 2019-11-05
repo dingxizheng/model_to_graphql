@@ -7,8 +7,7 @@ module ModelToGraphql
         def make_model_definition(model_name)
           model = model_name.constantize
           model_def = find_model_def(model)&.constantize || create_model_def(model)
-          # model_def.discover_links
-          Thread.new { model_def.discover_links }
+          model_def.discover_links
           model_def
         end
 
@@ -17,7 +16,7 @@ module ModelToGraphql
           model_def  = ModelToGraphql::Objects::ModelDefinition[model_name]
           fields     = model_def.merged_fields
           raw_fields = model_def.raw_fields || []
-          TypeGenerator.build(return_type_name(model), fields, raw_fields, ModelToGraphql.config_options[:authorize_object])
+          ModelToGraphql::Generators::TypeGenerator.build(return_type_name(model), fields, raw_fields, ModelToGraphql.config_options[:authorize_object])
         end
 
         def make_query_type(model_name)
@@ -25,7 +24,7 @@ module ModelToGraphql
           model_def      = ModelToGraphql::Objects::ModelDefinition[model_name]
           fields         = model_def.merged_fields
           custom_filters = model_def.filters || []
-          QueryTypeGenerator.build(query_type_name(model), fields, custom_filters)
+          ModelToGraphql::Generators::QueryTypeGenerator.build(query_type_name(model), fields, custom_filters)
         end
 
         def make_query_resolver(model_name)
@@ -33,20 +32,20 @@ module ModelToGraphql
           return_type = ModelToGraphql::Objects::Type[model_name]
           query_type  = ModelToGraphql::Objects::QueryType[model_name]
           sort_enum   = ModelToGraphql::Objects::SortKey[model_name]
-          ModelQueryGenerator.build(model, return_type, query_type, sort_enum, ModelToGraphql.config_options[:list_scope])
+          ModelToGraphql::Generators::ModelQueryGenerator.build(model, return_type, query_type, sort_enum, ModelToGraphql.config_options[:list_scope])
         end
 
         def make_record_resolver(model_name)
           model       = model_name.constantize
           return_type = ModelToGraphql::Objects::Type[model_name]
-          SingleRecordQueryGenerator.build(model, return_type)
+          ModelToGraphql::Generators::SingleRecordQueryGenerator.build(model, return_type)
         end
 
         def make_sort_key_enum(model_name)
           model      = model_name.constantize
           model_def  = ModelToGraphql::Objects::ModelDefinition[model_name]
           fields     = model_def.merged_fields
-          SortKeyEnumGenerator.build(sort_key_enum_name(model), fields)
+          ModelToGraphql::Generators::SortKeyEnumGenerator.build(sort_key_enum_name(model), fields)
         end
 
         def make_query_key_enum(model_name)

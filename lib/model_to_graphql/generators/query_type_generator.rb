@@ -6,15 +6,17 @@ module ModelToGraphql
       include Contracts::Core
       C = Contracts
 
-      def self.build(name, fields, custom_filters = [])
-        Class.new(QueryTypeGenerator) do
-          graphql_name name
+      def self.build(gl_name, fields, custom_filters = [])
+        ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
+        klass = Class.new(QueryTypeGenerator) do
+          graphql_name gl_name
           define_arguments fields
           define_custom_filters custom_filters
           def self.name
-            name
+            gl_name
           end
         end
+        klass
       end
 
       def self.name

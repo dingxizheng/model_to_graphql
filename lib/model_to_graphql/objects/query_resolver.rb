@@ -12,8 +12,26 @@ module ModelToGraphql
       end
 
       def self.const_missing(name)
-        query_resolver = ModelToGraphql::Objects::Helper.make_query_resolver(denormalize(name))
-        self.const_set(name, query_resolver)
+        return self.const_get(name) if self.self_const_defined?(name)
+        cnst = ModelToGraphql::Objects::Helper.make_query_resolver(denormalize(name))
+        self.const_set(name, cnst)
+      end
+
+      def self.const_set(name, cnst)
+        if self_const_defined?(name)
+          cnst
+        else
+          super(name, cnst)
+        end
+      end
+
+      def self.self_const_defined?(name)
+        if self.const_defined?(name)
+          c = self.const_get(name)
+          c.name.start_with?(self.name)
+        else
+          false
+        end
       end
 
       def self.remove_all_constants

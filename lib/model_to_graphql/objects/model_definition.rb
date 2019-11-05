@@ -12,7 +12,18 @@ module ModelToGraphql
       end
 
       def self.const_missing(name)
-        self.const_set(name, ModelToGraphql::Objects::Helper.make_model_definition(denormalize(name)))
+        return self.const_get(name) if self.self_const_defined?(name)
+        cnst = ModelToGraphql::Objects::Helper.make_model_definition(denormalize(name))
+        self.const_set(name, cnst)
+      end
+
+      def self.self_const_defined?(name)
+        if self.const_defined?(name)
+          c = self.const_get(name)
+          c.name.start_with?(self.name)
+        else
+          false
+        end
       end
 
       def self.remove_all_constants
