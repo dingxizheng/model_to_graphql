@@ -3,7 +3,7 @@
 module ModelToGraphql
   module Generators
     class EmbedsOneRelationResolverGenerator < GraphQL::Schema::Resolver
-      def resolve
+      def resolve(path: [], lookahead: nil)
         object.send(relation.name)
       end
 

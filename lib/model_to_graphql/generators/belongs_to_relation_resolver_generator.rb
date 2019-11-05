@@ -7,7 +7,7 @@ module ModelToGraphql
         attr_accessor :is_relation_unscoped_proc, :relation
       end
 
-      def resolve
+      def resolve(path: [], lookahead: nil)
         model_class = relation_model_class(relation, object)
         foreign_key = object.send("#{relation.name}_id")
         unscoped = false
