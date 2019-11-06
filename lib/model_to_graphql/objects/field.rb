@@ -92,10 +92,8 @@ module ModelToGraphql
         self.name = name.to_sym
         options.each do |key, val|
           if key.to_s == "type"
-            # find_the_cloest_type_symbol
             self.type = find_the_cloest_type_symbol(val)
           elsif key.to_s == "element"
-            # ele_key = ModelToGraphql::ORM::MongoidSettings::TYPE_MAPPINGS.select { |_, v| v == val }.to_a.first&.first
             self.element = find_the_cloest_type_symbol(val)
           else
             self.send("#{key}=", val)

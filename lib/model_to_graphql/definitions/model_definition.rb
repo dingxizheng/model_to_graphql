@@ -102,20 +102,20 @@ module ModelToGraphql
         @merged_fields = obj_fields
       end
 
-      def self.discover_links
+      def self.scan_relations
         return [] if model.nil?
-        discover_links_of :belongs_to
-        discover_links_of :has_one
-        discover_links_of :has_many
-        discover_links_of :has_and_belongs_to_many
-        discover_links_of :embeds_one
-        discover_links_of :embeds_many
+        self.scan_relations_of(:belongs_to)
+        self.scan_relations_of(:has_one)
+        self.scan_relations_of(:has_many)
+        self.scan_relations_of(:has_and_belongs_to_many)
+        self.scan_relations_of(:embeds_one)
+        self.scan_relations_of(:embeds_many)
       end
 
-      def self.discover_links_of(link_type)
+      def self.scan_relations_of(link_type)
         model.reflect_on_all_associations(link_type).each do |relation|
           # field relation.name, resolver: RelationResolver.of(relation).resolve
-          field relation.name, resolver: relation
+          self.field(relation.name, resolver: relation)
         end
       end
 

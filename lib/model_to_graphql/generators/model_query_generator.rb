@@ -10,6 +10,7 @@ module ModelToGraphql
           page
         end
       }
+
       argument :per,  Integer, required: false, default_value: 10, prepare: -> (per, _ctx) {
         if per && per > 100
           raise GraphQL::ExecutionError, "not allowed to return more than 50 items in one page!"
@@ -69,16 +70,13 @@ module ModelToGraphql
       # @param return_type The corresponding graphql type of the given model class
       # @param query_type The filter type
       # @param sort_key_enum Suppotted sort keys
-      # @param scope_resolver_proc The proc which called to resolve the default scope based on the context.
-      def self.build(model, return_type, query_type, sort_key_enum, scope_resolver_proc = nil)
+      def self.build(model, return_type, query_type, sort_key_enum)
         ModelToGraphql.logger.debug "ModelToGQL | Generating model query resolver #{model.name} ..."
-        klass = Class.new(ModelQueryGenerator) do
-          type           ModelToGraphql::Objects::PagedResult[return_type], null: false
-          scope_resolver scope_resolver_proc
-          to_resolve     model, query_type
-          argument       :sort, sort_key_enum, required: false
+        Class.new(ModelQueryGenerator) do
+          type(ModelToGraphql::Objects::PagedResult[return_type], null: false)
+          to_resolve(model, query_type)
+          argument(:sort, sort_key_enum, required: false)
         end
-        klass
       end
 
       def self.to_resolve(model, query_type)
@@ -95,19 +93,16 @@ module ModelToGraphql
         @handlers || {}
       end
 
-      def self.scope_resolver(resolver_proc = nil)
-        @scope_resolver = resolver_proc
-      end
-
       # Resovle the authorized scope
       # @param context Graphql execution context
       # @param model Base model class
       def self.resolve_authorized_scope(context, model)
-        return model if @scope_resolver.nil?
+        scope_resolver = ModelToGraphql.config_options[:list_scope]
+        return model if scope_resolver.nil?
         begin
-          return @scope_resolver.call(context, model)
+          return scope_resolver.call(context, model)
         rescue => e
-          puts "Failed to resolve the scope for #{model} when the context is #{context}"
+          ModelToGraphql.logger.error "Failed to resolve the scope for #{model} when the context is #{context}"
           raise e
         end
       end

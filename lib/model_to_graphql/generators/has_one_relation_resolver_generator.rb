@@ -4,14 +4,15 @@ module ModelToGraphql
   module Generators
     class HasOneRelationResolverGenerator < GraphQL::Schema::Resolver
       class << self
-        attr_accessor :is_relation_unscoped_proc, :relation
+        attr_accessor :relation
       end
 
       def resolve(path: [], lookahead: nil)
         unscoped = false
 
-        if self.class.is_relation_unscoped_proc.present?
-          unscoped = self.class.is_relation_unscoped_proc.call(relation)
+        relation_unscoped_proc = ModelToGraphql.config_options[:is_relation_unscoped]
+        unless relation_unscoped_proc.nil?
+          unscoped = relation_unscoped_proc.call(relation)
         end
 
         if unscoped
@@ -25,13 +26,11 @@ module ModelToGraphql
         self.class.relation
       end
 
-      def self.build(relation, return_type, is_relation_unscoped_proc = nil)
-        klass = Class.new(HasOneRelationResolverGenerator) do
-          type return_type, null: true
-          self.is_relation_unscoped_proc = is_relation_unscoped_proc
+      def self.build(relation, return_type)
+        Class.new(HasOneRelationResolverGenerator) do
+          type(return_type, null: true)
           self.relation = relation
         end
-        klass
       end
     end
   end

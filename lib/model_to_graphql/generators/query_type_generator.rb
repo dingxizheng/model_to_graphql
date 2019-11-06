@@ -5,7 +5,7 @@ module ModelToGraphql
     class QueryTypeGenerator < GraphQL::Schema::InputObject
       def self.build(gl_name, fields, custom_filters = [])
         ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
-        klass = Class.new(QueryTypeGenerator) do
+        Class.new(QueryTypeGenerator) do
           graphql_name(gl_name)
           define_arguments(fields)
           define_custom_filters(custom_filters)
@@ -13,7 +13,6 @@ module ModelToGraphql
             gl_name
           end
         end
-        klass
       end
 
       def self.name

@@ -3,8 +3,6 @@
 module ModelToGraphql
   module Generators
     class TypeGenerator < GraphQL::Schema::Object
-      include Contracts::Core
-      C = Contracts
 
       TYPE_MAPPINGS = [
         [:string, String],
@@ -21,29 +19,26 @@ module ModelToGraphql
         [:symbol, String]
       ].freeze
 
-      def self.build(gl_name, fields, raw_fields = [], guard_proc = nil)
+      def self.build(gl_name, fields, raw_fields = [])
         ModelToGraphql.logger.debug "ModelToGQL | Generating graphql type #{gl_name} ..."
-        klass = Class.new(TypeGenerator) do
+        Class.new(TypeGenerator) do
           graphql_name(gl_name)
           define_fields(fields, raw_fields)
           define_raw_fields(raw_fields)
 
-          @guard_proc = guard_proc
           def self.authorized?(object, context)
-            if !@guard_proc.nil? && @guard_proc.is_a?(Proc)
-              @guard_proc.call(object, context)
+            guard_proc = ModelToGraphql.config_options[:authorize_object]
+            if !guard_proc.nil?
+              guard_proc.call(object, context)
             else
               true
             end
           end
 
-          @gl_name = gl_name
           def self.name
-            @gl_name
+            gl_name
           end
         end
-
-        klass
       end
 
       def self.name
@@ -80,7 +75,7 @@ module ModelToGraphql
         end.each do |f|
           # If it's a id field
           if f.name == :id
-            field :id, ID, null: false
+            field(:id, ID, null: false)
           # If resolver is provided
           elsif f.resolver.present?
             if f.resolver.is_a? Mongoid::Association::Relatable
@@ -88,7 +83,7 @@ module ModelToGraphql
                 ModelToGraphql::EventBus.on_ready(f.resolver.klass.name) do
                   ModelToGraphql.logger.debug "ModelToGQL | add resolver on relation[#{f.resolver.name}] for model[#{f.resolver.klass.name}]"
                   resolver = RelationResolver.of(f.resolver).resolve
-                  field f.name, extras: [:path, :lookahead], resolver: resolver
+                  field(f.name, extras: [:path, :lookahead], resolver: resolver)
                 rescue => e
                   ModelToGraphql.logger.error "ModelToGQL | failed to add resolver on relation[#{f.resolver.name}] for model[#{f.resolver.klass.name}]"
                   ModelToGraphql.logger.error "ModelToGQL | #{resolver.inspect}, error: #{e.message}"
@@ -101,17 +96,17 @@ module ModelToGraphql
                 ModelToGraphql::EventBus.on_ready(*model_names) do
                   ModelToGraphql.logger.debug "ModelToGQL | add resolver on polymorphic relation[#{f.resolver.name}] for model[#{model_names}]"
                   resolver = RelationResolver.of(f.resolver).resolve
-                  field f.name, extras: [:path, :lookahead], resolver: resolver
+                  field(f.name, extras: [:path, :lookahead], resolver: resolver)
                 rescue => e
                   ModelToGraphql.logger.error "ModelToGQL | failed to add resolver on polymorphic relation[#{f.resolver.name}] for model[#{model_names}]"
                   ModelToGraphql.logger.error "ModelToGQL | #{resolver.inspect}, error: #{e.message}"
                 end
               end
             else
-              field f.name, resolver: f.resolver
+              field(f.name, resolver: f.resolver)
             end
           else
-            field f.name, graphql_prime_type(f.type, f.element), null: f.null?
+            field(f.name, graphql_prime_type(f.type, f.element), null: f.null?)
           end
         rescue => e
           puts "Failed to define field #{ f.inspect }"

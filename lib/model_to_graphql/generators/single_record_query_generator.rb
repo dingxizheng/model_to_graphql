@@ -16,11 +16,10 @@ module ModelToGraphql
 
       def self.build(klass, return_type)
         ModelToGraphql.logger.debug "ModelToGQL | Generating single record resolver #{klass.name} ..."
-        query_klass = Class.new(SingleRecordQueryGenerator) do
-          type return_type, null: true
-          for_class klass
+        Class.new(SingleRecordQueryGenerator) do
+          type(return_type, null: true)
+          for_class(klass)
         end
-        query_klass
       end
 
       def self.for_class(klass)

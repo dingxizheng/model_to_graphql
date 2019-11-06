@@ -4,7 +4,7 @@ module ModelToGraphql
   module Generators
     class BelongsToRelationResolverGenerator < GraphQL::Schema::Resolver
       class << self
-        attr_accessor :is_relation_unscoped_proc, :relation
+        attr_accessor :relation
       end
 
       def resolve(path: [], lookahead: nil)
@@ -12,8 +12,9 @@ module ModelToGraphql
         foreign_key = object.send("#{relation.name}_id")
         unscoped = false
 
-        if self.class.is_relation_unscoped_proc.present?
-          unscoped = self.class.is_relation_unscoped_proc.call(relation)
+        relation_unscoped_proc = ModelToGraphql.config_options[:is_relation_unscoped]
+        unless relation_unscoped_proc.nil?
+          unscoped = relation_unscoped_proc.call(relation)
         end
 
         ModelToGraphql::Loaders::RecordLoader.for(model_class, unscoped: unscoped).load(foreign_key&.to_s)
@@ -36,13 +37,11 @@ module ModelToGraphql
         end
       end
 
-      def self.build(relation, return_type, is_relation_unscoped_proc = nil)
-        klass = Class.new(BelongsToRelationResolverGenerator) do
-          type return_type, null: true
-          self.is_relation_unscoped_proc = is_relation_unscoped_proc
+      def self.build(relation, return_type)
+        Class.new(BelongsToRelationResolverGenerator) do
+          type(return_type, null: true)
           self.relation = relation
         end
-        klass
       end
     end
   end

@@ -7,7 +7,7 @@ module ModelToGraphql
         def make_model_definition(model_name)
           model = model_name.constantize
           model_def = find_model_def(model)&.constantize || create_model_def(model)
-          model_def.discover_links
+          model_def.scan_relations
           model_def
         end
 
@@ -16,7 +16,7 @@ module ModelToGraphql
           model_def  = ModelToGraphql::Objects::ModelDefinition[model_name]
           fields     = model_def.merged_fields
           raw_fields = model_def.raw_fields || []
-          ModelToGraphql::Generators::TypeGenerator.build(return_type_name(model), fields, raw_fields, ModelToGraphql.config_options[:authorize_object])
+          ModelToGraphql::Generators::TypeGenerator.build(return_type_name(model), fields, raw_fields)
         end
 
         def make_query_type(model_name)
@@ -32,7 +32,7 @@ module ModelToGraphql
           return_type = ModelToGraphql::Objects::Type[model_name]
           query_type  = ModelToGraphql::Objects::QueryType[model_name]
           sort_enum   = ModelToGraphql::Objects::SortKey[model_name]
-          ModelToGraphql::Generators::ModelQueryGenerator.build(model, return_type, query_type, sort_enum, ModelToGraphql.config_options[:list_scope])
+          ModelToGraphql::Generators::ModelQueryGenerator.build(model, return_type, query_type, sort_enum)
         end
 
         def make_record_resolver(model_name)

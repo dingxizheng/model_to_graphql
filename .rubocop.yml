@@ -5,6 +5,9 @@ AllCops:
   DisabledByDefault: true
   Exclude:
     - 'bin/**/*'
+    - 'spec/**/*'
+    - 'config.ru'
+    - 'config/boot.rb'
     - 'Rakefile'
 
 # Security
@@ -50,6 +53,9 @@ Layout/EmptyLinesAroundMethodBody:
 Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
+# Layout/IndentFirstArgument:
+#   Enabled: true
+
 # Use Ruby >= 1.9 syntax for hashes. Prefer { a: :b } over { :a => :b }.
 Style/HashSyntax:
   Enabled: true
@@ -58,7 +64,7 @@ Style/HashSyntax:
 # extra level of indentation.
 Layout/IndentationConsistency:
   Enabled: true
-  EnforcedStyle: indented_internal_methods
+  EnforcedStyle: normal
 
 # Two spaces, no tabs (for indentation).
 Layout/IndentationWidth:
