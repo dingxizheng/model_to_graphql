@@ -73,11 +73,11 @@ module ModelToGraphql
         fields.reject do |field|
           raw_fields.any? { |raw_field| raw_field[:name].to_s == field.name.to_s }
         end.each do |f|
-          # If it's a id field
           if f.name == :id
+            # If it's a id field
             field(:id, ID, null: false)
-          # If resolver is provided
           elsif f.resolver.present?
+            # If resolver is provided
             if f.resolver.is_a? Mongoid::Association::Relatable
               if !f.resolver.klass.nil?
                 ModelToGraphql::EventBus.on_ready(f.resolver.klass.name) do
@@ -109,7 +109,7 @@ module ModelToGraphql
             field(f.name, graphql_prime_type(f.type, f.element), null: f.null?)
           end
         rescue => e
-          puts "Failed to define field #{ f.inspect }"
+          ModelToGraphql.logger.error "Failed to define field #{ f.inspect }"
           raise e
         end
       end
