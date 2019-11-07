@@ -112,11 +112,11 @@ module ModelToGraphql
     end
 
     def mount_queries_to(query_type)
-      config(:query_type, query_type.name)
+      config(:query_type, query_type.is_a?(String) ? query_type : query_type.name)
     end
 
     def define_for_schema(schema)
-      config(:schema, schema.name)
+      config(:schema, schema.is_a?(String) ? schema : query_type.name)
     end
 
     def config(key, val)
