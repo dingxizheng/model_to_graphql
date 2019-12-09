@@ -19,6 +19,15 @@ module ModelToGraphql
         end
       }
 
+      def authorized?(*args)
+        return true if !object.nil?
+        guard_proc = ModelToGraphql.config_options[:authorize_action]
+        if !guard_proc.nil? && guard_proc.is_a?(Proc)
+          return guard_proc.call(object, args[0], context, :query_model, self.class.model_class)
+        end
+        true
+      end
+
       # @params filter [Hash]
       def resolve(path: [], lookahead: nil, filter: {}, **args)
         scope = default_scope(path&.last&.underscore)

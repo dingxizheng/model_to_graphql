@@ -6,6 +6,15 @@ module ModelToGraphql
 
       argument :id, ID, required: true
 
+      def authorized?(*args)
+        return true if !object.nil?
+        guard_proc = ModelToGraphql.config_options[:authorize_action]
+        if !guard_proc.nil? && guard_proc.is_a?(Proc)
+          return guard_proc.call(object, args[0], context, :view_model, klass)
+        end
+        true
+      end
+
       def resolve(path: [], lookahead: nil, id: nil)
         ModelToGraphql::Loaders::RecordLoader.for(klass).load(id)
       end
