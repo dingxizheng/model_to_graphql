@@ -3,6 +3,8 @@
 module ModelToGraphql
   module Generators
     class ModelQueryGenerator < GraphQL::Schema::Resolver
+      argument :unscope, Boolean, required: false, default_value: false
+
       argument :page, Integer, required: false, default_value: 1,  prepare: -> (page, _ctx) {
         if page && page >= 99999999
           raise GraphQL::ExecutionError, "page is too big!"
@@ -13,7 +15,7 @@ module ModelToGraphql
 
       argument :per,  Integer, required: false, default_value: 10, prepare: -> (per, _ctx) {
         if per && per > 100
-          raise GraphQL::ExecutionError, "not allowed to return more than 50 items in one page!"
+          raise GraphQL::ExecutionError, "not allowed to return more than 100 items in one page!"
         else
           per
         end
@@ -29,21 +31,28 @@ module ModelToGraphql
       end
 
       # @params filter [Hash]
-      def resolve(path: [], lookahead: nil, filter: {}, **args)
-        scope = default_scope(path&.last&.underscore)
-        filter.each do |arg, value|
-          arg_handler = self.class.query_handlers[arg.to_s]
-          if !arg_handler.nil?
-            scope = arg_handler.call(scope, value)
+      def resolve(path: [], lookahead: nil, filter: {}, unscope: false, **args)
+        func = proc {
+          scope = default_scope(path&.last&.underscore)
+          filter.each do |arg, value|
+            arg_handler = self.class.query_handlers[arg.to_s]
+            if !arg_handler.nil?
+              scope = arg_handler.call(scope, value)
+            end
           end
+          scope = pagination(scope, **args)
+          scope = sort(scope, **args)
+          OpenStruct.new(
+            list:  scope,
+            total: 0,
+            page:  args[:page]
+          )
+        }
+        if unscope
+          self.class.model_class.unscoped(&func)
+        else
+          func.call
         end
-        scope = pagination(scope, **args)
-        scope = sort(scope, **args)
-        OpenStruct.new(
-          list:  scope,
-          total: 0,
-          page:  args[:page]
-        )
       end
 
       def pagination(scope, page:, per:, **kwargs)
