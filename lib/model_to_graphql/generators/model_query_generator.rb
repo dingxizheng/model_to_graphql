@@ -42,17 +42,19 @@ module ModelToGraphql
           end
           scope = pagination(scope, **args)
           scope = sort(scope, **args)
-          OpenStruct.new(
-            list:  scope,
-            total: 0,
-            page:  args[:page]
-          )
         }
-        if unscope
-          self.class.model_class.unscoped(&func)
-        else
-          func.call
-        end
+
+        result_scope = if unscope
+                        self.class.model_class.unscoped(&func)
+                      else
+                        func.call
+                      end
+
+        OpenStruct.new(
+          list:  result_scope,
+          total: 0,
+          page:  args[:page]
+        )
       end
 
       def pagination(scope, page:, per:, **kwargs)
