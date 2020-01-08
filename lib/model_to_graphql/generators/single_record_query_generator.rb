@@ -5,6 +5,7 @@ module ModelToGraphql
     class SingleRecordQueryGenerator < GraphQL::Schema::Resolver
 
       argument :id, ID, required: true
+      argument :unscope, Boolean, required: false, default_value: false
 
       def authorized?(*args)
         return true if !object.nil?
@@ -15,8 +16,8 @@ module ModelToGraphql
         true
       end
 
-      def resolve(path: [], lookahead: nil, id: nil)
-        ModelToGraphql::Loaders::RecordLoader.for(klass).load(id)
+      def resolve(path: [], lookahead: nil, id: ni, unscope: false)
+        ModelToGraphql::Loaders::RecordLoader.for(klass, unscoped: unscope).load(id)
       end
 
       def klass
