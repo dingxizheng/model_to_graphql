@@ -91,15 +91,17 @@ module ModelToGraphql
 
       def self.make_array_argument(field)
         if field.element == :string
-          query_argument(field, nil, field.name.to_sym,   String, required: false, camelize: false)
-          query_argument(field, :ne, :"#{field.name}_ne", String, required: false, camelize: false)
-          query_argument(field, :in, :"#{field.name}_in", [String], required: false, camelize: false)
-          query_argument(field, :regex, :"#{field.name}_has", String, required: false, camelize: false)
+          query_argument(field, nil,    field.name.to_sym,   String,   required: false, camelize: false)
+          query_argument(field, :ne,    :"#{field.name}_ne", String,   required: false, camelize: false)
+          query_argument(field, :in,    :"#{field.name}_in", [String], required: false, camelize: false)
+          query_argument(field, :regex, :"#{field.name}_has", String,  required: false, camelize: false)
         end
       end
 
       def self.make_id_argument(field)
-        query_argument(field, nil, field.name.to_sym, String, required: false, camelize: false)
+        query_argument(field, nil, field.name.to_sym,   String,   required: false, camelize: false)
+        query_argument(field, :ne, :"#{field.name}_ne", String,   required: false, camelize: false)
+        query_argument(field, :in, :"#{field.name}_in", [String], required: false, camelize: false)
       end
 
       def self.make_argument(field)
