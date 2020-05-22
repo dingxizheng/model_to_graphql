@@ -37,6 +37,7 @@ module ModelToGraphql
         self.type = :id
         self.required = false
         self.editable = false
+        self.filterable = true
       end
 
       Contract MongoidStdField => C::Any
