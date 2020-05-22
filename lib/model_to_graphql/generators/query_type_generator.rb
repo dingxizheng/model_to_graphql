@@ -90,12 +90,12 @@ module ModelToGraphql
       end
 
       def self.make_array_argument(field)
-        query_argument(field, nil, field.name.to_sym, Float, required: false, camelize: false)
-        # argument :"#{field.name}_ne", Float, required: false, camelize: false
-        # argument :"#{field.name}_lt", Float, required: false, camelize: false
-        # argument :"#{field.name}_gt", Float, required: false, camelize: false
-        # argument :"#{field.name}_ge", Float, required: false, camelize: false
-        # argument :"#{field.name}_le", Float, required: false, camelize: false
+        if field.element == :string
+          query_argument(field, nil, field.name.to_sym,   String, required: false, camelize: false)
+          query_argument(field, :ne, :"#{field.name}_ne", String, required: false, camelize: false)
+          query_argument(field, :in, :"#{field.name}_in", [String], required: false, camelize: false)
+          query_argument(field, :regex, :"#{field.name}_has", String, required: false, camelize: false)
+        end
       end
 
       def self.make_id_argument(field)
@@ -108,6 +108,8 @@ module ModelToGraphql
           make_id_argument(field)
         when :string, :symbol, :object_id
           make_string_argument(field)
+        when :array
+          make_array_argument(field)
         when :integer
           make_computable_argument(field, Integer)
         when :boolean
