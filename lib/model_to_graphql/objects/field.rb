@@ -135,7 +135,7 @@ module ModelToGraphql
       Contract Field => Field
       def merge!(field)
         FIELD_OPTION_TYPE.keys.each do |key|
-          self.send("#{key}=", field.send(key)) unless field.send(key).nil?
+          self.send("#{key}=", field.send(key)) unless !field.respond_to?(key) || field.send(key).nil?
         end
         self
       end
