@@ -60,6 +60,16 @@ module ModelToGraphql
       config(:orm, orm)
     end
 
+    def date_converter(proc = nil, &block)
+      if proc.is_a? Proc
+        config(:date_converter, proc)
+      elsif block_given?
+        config(:date_converter, block)
+      else
+        raise ArgumentError, "Proc must be provided!"
+      end
+    end
+
     # Define all the models should be excluded from the schema
     def exclude_models(*models_to_be_excluded)
       config(:excluded_models, models_to_be_excluded)

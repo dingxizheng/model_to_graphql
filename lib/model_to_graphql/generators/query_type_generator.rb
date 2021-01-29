@@ -44,6 +44,18 @@ module ModelToGraphql
             value = nil
           end
 
+          # if raw_value is a date
+          if raw_value.is_a?(DateTime) && raw_value.hour == 0 && raw_value.minute == 0 && raw_value.second == 0
+            date_converter = ModelToGraphql.config_options[:date_converter]
+            if !date_converter.nil?
+              value = date_converter.call(raw_value)
+            end
+
+            if arg_name.to_s.ends_with?("_lte") 
+              value = value + 1.day
+            end
+          end
+
           if operator.nil?
             scope.and("#{field_name}": value)
           elsif operator.to_s == "regex"
